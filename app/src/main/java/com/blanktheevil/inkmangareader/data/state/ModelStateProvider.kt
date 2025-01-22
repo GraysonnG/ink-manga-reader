@@ -1,6 +1,8 @@
 package com.blanktheevil.inkmangareader.data.state
 
+import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
+import com.blanktheevil.inkmangareader.data.models.BaseItem
 import com.blanktheevil.inkmangareader.data.room.temp.ModelStateDao
 import com.blanktheevil.inkmangareader.data.room.temp.ModelStateModel
 import com.blanktheevil.inkmangareader.data.success
@@ -59,8 +61,24 @@ class ModelStateProvider(
             val newState = update(it)
             activeState.stateFlow.emit(success(newState))
             persist?.invoke(newState)
+            if (newState is BaseItem) { notifyItemListOfChange(newState) }
         }
     }
+
+    private suspend fun <T : BaseItem> notifyItemListOfChange(itemChanged: T) =
+        states.values.filterIsInstance<ActiveState<DataList<T>>>()
+            .associate { it.stateFlow to it.stateFlow.value.successOrNull() }
+            .forEach { (flow, data) ->
+                if (data == null) return@forEach
+                val indexOfItem = data.items.indexOfFirst { it.id == itemChanged.id }
+                if (indexOfItem >= 0) {
+                    val newList = data.items.toMutableList().apply {
+                        set(indexOfItem, itemChanged)
+                    }
+
+                    flow.emit(success(data.copy(items = newList)))
+                }
+            }
 
     private suspend fun <T> getNetworkDataAndPersist(
         activeState: ActiveState<T>,
@@ -70,6 +88,7 @@ class ModelStateProvider(
         either.onSuccess {
             persist?.invoke(it)
             activeState.expireTime = System.currentTimeMillis() + EXPIRE_TIME
+            if (it is BaseItem) { notifyItemListOfChange(it) }
             modelStateDao.insert(
                 ModelStateModel(
                     key = activeState.key,
