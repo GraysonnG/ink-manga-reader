@@ -6,12 +6,16 @@ import com.blanktheevil.inkmangareader.data.models.BaseItem
 import com.blanktheevil.inkmangareader.data.room.temp.ModelStateDao
 import com.blanktheevil.inkmangareader.data.room.temp.ModelStateModel
 import com.blanktheevil.inkmangareader.data.success
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class ModelStateProvider(
     private val modelStateDao: ModelStateDao,
 ) {
+    private val modelStateScope = CoroutineScope(Dispatchers.IO)
     private var states: MutableMap<String, ActiveState<*>> = mutableMapOf()
 
     companion object {
@@ -29,23 +33,25 @@ class ModelStateProvider(
         val stateExpired = activeState.expireTime < System.currentTimeMillis()
 
         // if activeState is expired or the hard refresh flag is true
-        if (stateExpired || hardRefresh) {
-            activeState.stateFlow.emit(
-                getNetworkDataAndPersist(
-                    activeState,
-                    networkProvider,
-                    persist,
+        modelStateScope.launch {
+            if (stateExpired || hardRefresh) {
+                activeState.stateFlow.emit(
+                    getNetworkDataAndPersist(
+                        activeState,
+                        networkProvider,
+                        persist,
+                    )
                 )
-            )
-        } else {
-            // get the local state or an Either.Null
-            val localState = localProvider?.invoke() ?: Either.Null()
-            // get the local state and if its not a success grab a new network state
-            val state = if (localState !is Either.Success)
-                getNetworkDataAndPersist(activeState, networkProvider, persist)
-            else localState
-            // emit the the state into the flow
-            activeState.stateFlow.emit(state)
+            } else {
+                // get the local state or an Either.Null
+                val localState = localProvider?.invoke() ?: Either.Null()
+                // get the local state and if its not a success grab a new network state
+                val state = if (localState !is Either.Success)
+                    getNetworkDataAndPersist(activeState, networkProvider, persist)
+                else localState
+                // emit the the state into the flow
+                activeState.stateFlow.emit(state)
+            }
         }
 
         return activeState.stateFlow
