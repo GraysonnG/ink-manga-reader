@@ -6,6 +6,7 @@ sealed class Either<T> {
     class Null<T>: Either<T>()
 
     fun successOrNull(): T? = if (this is Success) data else null
+    fun errorOrNull(): Throwable? = if (this is Error) error else null
 
     inline fun onSuccess(callback: (T) -> Unit) = apply {
         if (this is Success) callback(data)
