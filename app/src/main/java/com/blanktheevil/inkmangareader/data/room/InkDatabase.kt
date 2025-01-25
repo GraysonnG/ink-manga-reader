@@ -11,14 +11,17 @@ import com.blanktheevil.inkmangareader.data.room.models.ListModel
 import com.blanktheevil.inkmangareader.data.room.models.MangaModel
 import com.blanktheevil.inkmangareader.data.room.temp.ModelStateDao
 import com.blanktheevil.inkmangareader.data.room.temp.ModelStateModel
+import com.blanktheevil.inkmangareader.download.room.DownloadDao
+import com.blanktheevil.inkmangareader.download.room.DownloadModel
 
 @Database(
-    version = 2,
+    version = 3,
     exportSchema = true,
     entities = [
-        MangaModel::class,
         ChapterModel::class,
+        DownloadModel::class,
         ListModel::class,
+        MangaModel::class,
         ModelStateModel::class,
     ],
 )
@@ -28,6 +31,7 @@ abstract class InkDatabase : RoomDatabase() {
     abstract fun chapterDao(): ChapterDao
     abstract fun listDao(): ListDao
     abstract fun modelStateDao(): ModelStateDao
+    abstract fun downloadDao(): DownloadDao
 
     companion object {
         const val NAME = "ink-database-v2"

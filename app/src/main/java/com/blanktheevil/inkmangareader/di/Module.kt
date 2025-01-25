@@ -18,13 +18,13 @@ import com.blanktheevil.inkmangareader.data.repositories.user.UserRepository
 import com.blanktheevil.inkmangareader.data.repositories.user.UserRepositoryImpl
 import com.blanktheevil.inkmangareader.data.room.InkDatabase
 import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
-import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
+import com.blanktheevil.inkmangareader.download.DownloadManager
+import com.blanktheevil.inkmangareader.download.DownloadManagerImpl
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import okhttp3.OkHttpClient
 import org.json.JSONObject
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -77,11 +77,14 @@ val appModule = module {
             .create()
     }
 
+    singleOf(::DownloadManagerImpl) { bind<DownloadManager>() }
+
     singleOf(::SessionManager)
     single { get<InkDatabase>().mangaDao() }
     single { get<InkDatabase>().chapterDao() }
     single { get<InkDatabase>().listDao() }
     single { get<InkDatabase>().modelStateDao() }
+    single { get<InkDatabase>().downloadDao() }
 
 
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
@@ -89,8 +92,6 @@ val appModule = module {
     singleOf(::MangaRepositoryImpl) { bind<MangaRepository>() }
     singleOf(::ChapterRepositoryImpl) { bind<ChapterRepository>() }
     singleOf(::UserListRepositoryImpl) { bind<UserListRepository>() }
-
-    viewModelOf(::MangaDetailViewModel)
 
     singleOf(::ModelStateProvider)
 }

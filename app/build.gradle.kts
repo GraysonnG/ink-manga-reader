@@ -60,12 +60,15 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.work)
 
     implementation(libs.moshi)
     implementation(libs.moshi.adapters)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.moshi)
+
+    implementation(libs.coil)
 
     implementation(libs.koin)
     implementation(libs.koin.compose)
