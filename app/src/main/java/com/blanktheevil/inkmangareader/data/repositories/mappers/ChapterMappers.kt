@@ -29,7 +29,7 @@ fun ChapterDto.toChapter(): Chapter {
         externalUrl = this.attributes.externalUrl,
         relatedManga = relatedManga?.toManga(),
         relatedMangaId = relatedMangaId,
-        relatedScanlationGroup = null,
+        relatedScanlationGroup = relatedScanGroup?.toScanlationGroup(),
         relatedScanlationGroupId = relatedScanGroupId,
         isRead = null
     )
@@ -51,6 +51,9 @@ fun ChapterList.setReadMarkers(markerIds: List<String>): ChapterList = ChapterLi
     total = total
 )
 
+/**
+ * Creates a string in the format "Vol. 1 Ch. 1 - Chapter Title"
+ */
 val ChapterDto.primaryTitle: String
     get() {
         val chapterNumber = this.attributes.chapter
@@ -66,6 +69,9 @@ val ChapterDto.primaryTitle: String
         ).joinToString(separator = " - ")
     }
 
+/**
+ * Creates a string in the format "Ch. 1" or "Chapter Title"
+ */
 val ChapterDto.shortTitle: String
     get() {
         val chapterNumber = this.attributes.chapter
@@ -76,6 +82,9 @@ val ChapterDto.shortTitle: String
         return title
     }
 
+/**
+ * Creates a string in the format "Ch. 1 - Chapter Title" or "Ch. 1"
+ */
 val ChapterDto.mediumTitle: String
     get() {
         val chapterNumber = this.attributes.chapter
