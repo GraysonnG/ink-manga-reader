@@ -15,4 +15,7 @@ interface DownloadDao {
 
     @Query("DELETE FROM DownloadModel")
     suspend fun clear()
+
+    @Query("DELETE FROM DownloadModel WHERE `chapterId` = :key")
+    suspend fun remove(key: String)
 }

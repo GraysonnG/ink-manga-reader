@@ -21,4 +21,8 @@ class DownloadManagerStub : DownloadManager {
     }
 
     override suspend fun isChapterDownloaded(chapterId: String): Boolean = true
+
+    override suspend fun removeDownloadedChapter(chapterId: String) {
+
+    }
 }

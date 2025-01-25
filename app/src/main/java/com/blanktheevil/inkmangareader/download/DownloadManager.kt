@@ -8,5 +8,5 @@ interface DownloadManager {
     fun notifyChapterProgress(chapterId: String, progress: Float)
     fun notifyChapterDownloadFinished(chapterId: String)
     suspend fun isChapterDownloaded(chapterId: String): Boolean
-    // delete download
+    suspend fun removeDownloadedChapter(chapterId: String)
 }

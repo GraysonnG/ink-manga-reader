@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 class DownloadManagerImpl(
     private val context: Context,
@@ -40,16 +41,21 @@ class DownloadManagerImpl(
 
     override fun notifyChapterDownloadFinished(chapterId: String) {
         scope.launch {
+            downloadDao.insert(DownloadModel(chapterId))
             delay(500)
             downloadingMap.value = downloadingMap.value.toMutableMap().apply {
                 remove(chapterId)
             }
 
-            downloadDao.insert(DownloadModel(chapterId))
         }
     }
 
     override suspend fun isChapterDownloaded(chapterId: String): Boolean {
         return downloadDao.get(chapterId) != null
+    }
+
+    override suspend fun removeDownloadedChapter(chapterId: String) {
+        downloadDao.remove(chapterId)
+        File(context.filesDir, chapterId).deleteRecursively()
     }
 }
