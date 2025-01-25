@@ -63,10 +63,10 @@ suspend fun <T : BaseItem, R : BaseDao<out BaseModel<T>, T>> getListFromRoom(
 ): DataList<T>? {
     val list = listDao.get(key) ?: return null
     return DataList(
-        items = list.ids.mapNotNull { itemDao.get(it)?.data }.toList(),
+        items = list.ids.mapNotNull { itemDao.get(it)?.data },
         title = list.title,
         limit = list.limit,
         offset = list.offset,
-        total = list.total
+        total = list.total,
     )
 }
