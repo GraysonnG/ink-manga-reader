@@ -1,6 +1,8 @@
 package com.blanktheevil.inkmangareader.viewmodels
 
 import androidx.lifecycle.viewModelScope
+import com.blanktheevil.inkmangareader.data.Session
+import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.models.MangaList
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaListEither
@@ -10,10 +12,12 @@ import kotlinx.coroutines.launch
 
 class DemoViewModel(
     private val mangaRepository: MangaRepository,
+    private val sessionManager: SessionManager,
 ) : BaseViewModel<DemoViewModel.DemoState, DemoViewModel.DemoParams>(DemoState()) {
     override fun initViewModel(hardRefresh: Boolean, params: DemoParams?) = viewModelScope.launch {
         updateState { copy(loading = true) }
         combine(
+            sessionManager.session,
             mangaRepository.getList(MangaListRequest.Seasonal, hardRefresh = hardRefresh),
             mangaRepository.getList(MangaListRequest.Popular, hardRefresh = hardRefresh),
             mangaRepository.getList(MangaListRequest.Recent, hardRefresh = hardRefresh),
@@ -35,6 +39,7 @@ class DemoViewModel(
     }
 
     private data class HomeFlowData(
+        val session: Session?,
         val seasonal: MangaListEither,
         val popular: MangaListEither,
         val recent: MangaListEither,
