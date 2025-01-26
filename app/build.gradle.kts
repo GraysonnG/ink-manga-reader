@@ -1,7 +1,17 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ksp)
+}
+
+val localPropertiesFile = rootProject.file("local.properties")
+val localProperties = Properties()
+
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
 android {
@@ -22,7 +32,19 @@ android {
     }
 
     buildTypes {
+        debug {
+            localProperties.forEach { k, value ->
+                val key = k.toString().uppercase().replace(".", "_")
+                if (!key.equals("SDK_DIR", true))
+                    buildConfigField("String", key, "\"$value\"")
+            }
+        }
         release {
+            localProperties.forEach { k, value ->
+                val key = k.toString().uppercase().replace(".", "_")
+                if (!key.equals("SDK_DIR", true))
+                    buildConfigField("String", key, "\"$value\"")
+            }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -39,6 +61,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
