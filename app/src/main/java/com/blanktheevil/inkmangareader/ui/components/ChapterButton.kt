@@ -329,9 +329,11 @@ private fun Preview() = DefaultPreview {
                 isRead = true
             )
         )
-        ChapterButton(chapter = StubData.chapter(
-            title = "Chapter with a really really long name like actually way too fucking long wtf",
-            scanlationGroupName = "Group with a really really long name like actually way too fucking long wtf"
-        ))
+        ChapterButton(
+            chapter = StubData.chapter(
+                title = "Chapter with a really really long name like actually way too fucking long wtf",
+                scanlationGroupName = "Group with a really really long name like actually way too fucking long wtf"
+            )
+        )
     }
 }
