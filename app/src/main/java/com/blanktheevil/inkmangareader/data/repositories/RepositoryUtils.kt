@@ -10,6 +10,7 @@ import com.blanktheevil.inkmangareader.data.room.dao.ListDao
 import com.blanktheevil.inkmangareader.data.room.models.BaseModel
 import com.blanktheevil.inkmangareader.data.success
 import com.blanktheevil.inkmangareader.data.error
+import com.blanktheevil.inkmangareader.data.isInvalid
 
 suspend fun <T> makeCall(
     callback: suspend () -> T?,
@@ -27,11 +28,11 @@ suspend fun <T> makeAuthenticatedCall(
     sessionManager: SessionManager,
     callback: suspend (auth: String) -> T?
 ) = makeCall {
-    if (sessionManager.session.value == null || sessionManager.session.value?.isExpired() == true)
+    if (sessionManager.session.value.isInvalid())
         throw Exception("Session Expired or null")
 
     val validSession = sessionManager.session.value!!
-    callback(validSession.token)
+    callback("Bearer ${validSession.token}")
 }
 
 suspend fun <T> makeOptionallyAuthenticatedCall(
@@ -41,7 +42,7 @@ suspend fun <T> makeOptionallyAuthenticatedCall(
     val session = sessionManager.session.value.let {
         if (it == null || it.isExpired()) null else it
     }
-    callback(session?.token)
+    callback(session?.token?.let { token ->"Bearer $token" })
 }
 
 fun makeKey(prefix: String, vararg key: Any) =

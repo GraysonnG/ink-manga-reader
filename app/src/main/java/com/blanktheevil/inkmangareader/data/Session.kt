@@ -15,5 +15,6 @@ data class Session(
 
 private const val FIFTEEN_MINUTES: Long = 15 * 60 * 1000
 
-fun Session.isExpired() = System.currentTimeMillis() - expires >= FIFTEEN_MINUTES
+fun Session.isExpired() = System.currentTimeMillis() >= expires
 fun Session?.isValid() = this != null && !this.isExpired()
+fun Session?.isInvalid() = this == null || this.isExpired()

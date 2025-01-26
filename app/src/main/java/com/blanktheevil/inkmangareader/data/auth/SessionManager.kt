@@ -24,19 +24,23 @@ class SessionManager(
     val session: StateFlow<Session?> = _session.asStateFlow()
 
     init {
-        scope.launch {
-            // get a session from shared prefs and attempt to refresh it. does not check if session is expired, just gets a new one
-            localSession?.let {
-                _session.value = authRepository.refresh(it.refresh).successOrNull()
+        // get a session from shared prefs and attempt to refresh it. does not check if session is expired, just gets a new one
+        localSession?.let {
+            _session.value = it
+            scope.launch {
+                val refresh = authRepository.refresh(it.refresh).successOrNull()
+                _session.value = refresh
+                localSession = refresh
             }
         }
     }
 
-    fun login(username: String, password: String) = scope.launch {
+    suspend fun login(username: String, password: String) =
         authRepository.login(username, password).successOrNull()?.let {
             _session.value = it
+            localSession = it
         }
-    }
+
 
     private var localSession: Session?
         get() = context.getSharedPreferences(SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE)

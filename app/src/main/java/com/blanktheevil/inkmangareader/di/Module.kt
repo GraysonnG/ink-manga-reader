@@ -26,6 +26,7 @@ import okhttp3.OkHttpClient
 import org.json.JSONObject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -79,7 +80,7 @@ val appModule = module {
 
     singleOf(::DownloadManagerImpl) { bind<DownloadManager>() }
 
-    singleOf(::SessionManager)
+    singleOf(::SessionManager) { createdAtStart() }
     single { get<InkDatabase>().mangaDao() }
     single { get<InkDatabase>().chapterDao() }
     single { get<InkDatabase>().listDao() }
