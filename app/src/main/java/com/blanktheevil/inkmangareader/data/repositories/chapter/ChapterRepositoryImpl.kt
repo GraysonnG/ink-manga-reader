@@ -52,6 +52,7 @@ class ChapterRepositoryImpl(
         hardRefresh: Boolean
     ): StateFlow<ChapterListEither> = modelStateProvider.register(
         key = makeKey(CHAPTER_LIST_PREFIX, request.type, limit, offset),
+        hardRefresh = hardRefresh,
         networkProvider = request.getNetworkProvider(limit, offset),
         localProvider = {
             makeCall {
