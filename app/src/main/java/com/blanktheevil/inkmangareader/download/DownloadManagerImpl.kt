@@ -25,11 +25,15 @@ class DownloadManagerImpl(
 
 
     override fun downloadChapter(chapterId: String) {
-        val intent = Intent(context, ChapterDownloadService::class.java)
-            .putExtra(ChapterDownloadService.EXTRA_KEY, chapterId)
-        context.startService(intent)
-        downloadingMap.value = downloadingMap.value.toMutableMap().apply {
-            put(chapterId, 0f)
+        scope.launch {
+            if (isChapterDownloaded(chapterId)) return@launch
+
+            val intent = Intent(context, ChapterDownloadService::class.java)
+                .putExtra(ChapterDownloadService.EXTRA_KEY, chapterId)
+            context.startService(intent)
+            downloadingMap.value = downloadingMap.value.toMutableMap().apply {
+                put(chapterId, 0f)
+            }
         }
     }
 
