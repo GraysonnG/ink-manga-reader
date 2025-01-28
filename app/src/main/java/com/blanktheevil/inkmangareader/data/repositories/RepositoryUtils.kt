@@ -11,11 +11,13 @@ import com.blanktheevil.inkmangareader.data.room.models.BaseModel
 import com.blanktheevil.inkmangareader.data.success
 import com.blanktheevil.inkmangareader.data.error
 import com.blanktheevil.inkmangareader.data.isInvalid
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 suspend fun <T> makeCall(
     callback: suspend () -> T?,
-): Either<T> {
-    return try {
+): Either<T> = withContext(Dispatchers.IO) {
+    try {
         val result = callback()
         if (result != null) success(result) else Either.Null()
     } catch (e: Exception) {
