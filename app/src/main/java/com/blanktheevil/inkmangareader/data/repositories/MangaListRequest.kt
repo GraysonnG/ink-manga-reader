@@ -7,7 +7,10 @@ import com.blanktheevil.inkmangareader.data.Tags
 sealed class MangaListRequest(
     val type: String
 ) {
-    data class Generic(val data: List<String>) : MangaListRequest(type = data.joinToString { it.takeLast(4) })
+    data class Generic(
+        val data: List<String>,
+        val name: String? = null,
+    ) : MangaListRequest(type = data.joinToString { it.takeLast(4) } + name.orEmpty() )
     data object Popular : MangaListRequest(type = "Popular")
     data object Recent : MangaListRequest(type = "Recent")
     data object Seasonal : MangaListRequest(type = "Seasonal")
