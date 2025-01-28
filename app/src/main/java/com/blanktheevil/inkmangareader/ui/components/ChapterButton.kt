@@ -96,13 +96,13 @@ private fun InternalButton(
         mutableStateOf(false)
     }
 
-    Button(
+    SimpleInkButton(
         onClick = onClick,
         title = {
 
             InkIcon(
-                resId = if(isRead) R.drawable.rounded_check_circle_24 else R.drawable.outline_circle_24,
-                modifier = Modifier.padding(start = 8.dp),
+                resId = if(isRead) R.drawable.round_check_circle_24 else R.drawable.outline_circle_24,
+                modifier = Modifier.padding(start = 12.dp),
                 contentDescription = null,
             )
 

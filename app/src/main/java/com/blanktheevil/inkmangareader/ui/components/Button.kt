@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -34,11 +35,12 @@ private val ButtonModifier
     @Composable get() = Modifier
         .height(IntrinsicSize.Min)
         .fillMaxWidth()
-        .clip(RoundedCornerShape(4.dp))
+        .clip(RoundedCornerShape(50))
         .background(buttonColor())
+        .heightIn(min = 40.dp)
 
 @Composable
-fun Button(
+fun SimpleInkButton(
     onClick: () -> Unit,
     title: @Composable RowScope.() -> Unit,
     background: (@Composable BoxScope.() -> Unit)? = null,
