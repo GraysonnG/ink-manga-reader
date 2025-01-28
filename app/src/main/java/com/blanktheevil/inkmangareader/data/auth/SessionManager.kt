@@ -1,6 +1,7 @@
 package com.blanktheevil.inkmangareader.data.auth
 
 import android.content.Context
+import android.util.Log
 import com.blanktheevil.inkmangareader.data.Session
 import com.blanktheevil.inkmangareader.data.repositories.auth.AuthRepository
 import com.squareup.moshi.Moshi
@@ -25,6 +26,7 @@ class SessionManager(
 
     init {
         // get a session from shared prefs and attempt to refresh it. does not check if session is expired, just gets a new one
+        Log.d("Ink SessionManager", "Local Session: ${localSession != null}")
         localSession?.let {
             _session.value = it
             scope.launch {
