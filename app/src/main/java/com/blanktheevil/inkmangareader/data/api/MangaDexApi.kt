@@ -113,7 +113,7 @@ interface MangaDexApi {
         @Query("offset") offset: Int = 0,
         @Query("translatedLanguage[]") translatedLanguage: List<String> = listOf("en"),
         @Query("order[readableAt]") order: List<String> = listOf("desc"),
-        @Query("includes[]") includes: List<String> = listOf("scanlation_group"),
+        @Query("includes[]") includes: List<String> = listOf("scanlation_group", "manga"),
     ): GetChapterListResponse
 
     @GET("user/follows/manga/{id}")
