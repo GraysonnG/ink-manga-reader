@@ -147,6 +147,9 @@ class RelationshipList : ArrayList<GenericMangaDexObject>() {
 
     inline fun <reified T : GenericMangaDexObject> getAllOfType(): List<T> =
         this.filterIsInstance(T::class.java)
+
+    fun getAllOfType(type: String): List<GenericMangaDexObject> =
+        this.filter { it.type == type }
 }
 
 fun emptyRelationshipList() = RelationshipList()
