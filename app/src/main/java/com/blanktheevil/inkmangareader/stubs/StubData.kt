@@ -20,9 +20,10 @@ object StubData {
     )
 
     fun mangaList(
-        title: String = "The Stub Manga List",
+        title: String? = "The Stub Manga List",
         length: Int
     ): MangaList = MangaList(
+        title = title,
         items = List(size = length) {
             manga(
                 title = "Stub Manga $it"
