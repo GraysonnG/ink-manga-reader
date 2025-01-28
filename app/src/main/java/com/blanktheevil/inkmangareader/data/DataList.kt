@@ -12,3 +12,10 @@ data class DataList<T>(
 )
 
 fun <T> emptyDataList(): DataList<T> = DataList(emptyList())
+inline fun <T, R> DataList<T>.map(transform: (T) -> R) = DataList(
+    title = title,
+    items = items.map(transform),
+    offset = offset,
+    limit = limit,
+    total = total,
+)
