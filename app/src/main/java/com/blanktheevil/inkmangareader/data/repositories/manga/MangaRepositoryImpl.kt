@@ -1,5 +1,6 @@
 package com.blanktheevil.inkmangareader.data.repositories.manga
 
+import android.util.Log
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.Sorting
@@ -16,7 +17,7 @@ import com.blanktheevil.inkmangareader.data.room.dao.MangaDao
 import com.blanktheevil.inkmangareader.data.room.dao.ListDao
 import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
 import com.blanktheevil.inkmangareader.data.repositories.mappers.toManga
-import com.blanktheevil.inkmangareader.data.repositories.mappers.toMangaLists
+import com.blanktheevil.inkmangareader.data.repositories.mappers.toMangaList
 import kotlinx.coroutines.flow.StateFlow
 
 class MangaRepositoryImpl(
@@ -94,29 +95,30 @@ class MangaRepositoryImpl(
     ): suspend () -> MangaListEither = suspend {
         when (this) {
             is MangaListRequest.Generic -> makeCall {
+                Log.d("Generic List", data.joinToString(","))
                 mangaDexApi.getManga(ids = data, limit = limit, offset = offset)
-                    .toMangaLists()
+                    .toMangaList(this.name)
             }
 
             is MangaListRequest.Popular -> makeCall {
                 mangaDexApi.getMangaPopular(limit = limit, offset = offset)
-                    .toMangaLists()
+                    .toMangaList(title = "Popular")
             }
 
             is MangaListRequest.Recent -> makeCall {
                 mangaDexApi.getMangaRecent(limit = limit, offset = offset)
-                    .toMangaLists()
+                    .toMangaList(title = "Recent")
             }
 
             is MangaListRequest.Follows -> makeAuthenticatedCall(sessionManager) { auth ->
                 mangaDexApi.getFollowsList(authorization = auth, limit = limit, offset = offset)
-                    .toMangaLists()
+                    .toMangaList()
             }
 
             is MangaListRequest.Seasonal -> makeCall {
                 githubApi.getSeasonalData().let {
                     mangaDexApi.getManga(ids = it.mangaIds, limit = it.mangaIds.size, offset = 0)
-                        .toMangaLists(title = it.name)
+                        .toMangaList(title = it.name)
                 }
             }
 
@@ -136,7 +138,7 @@ class MangaRepositoryImpl(
                     status = status,
                     title = title,
                     year = year,
-                ).toMangaLists()
+                ).toMangaList()
             }
 
             else -> throw Exception("no request of this type available")

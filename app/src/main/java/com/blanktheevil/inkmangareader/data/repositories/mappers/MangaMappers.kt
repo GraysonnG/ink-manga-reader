@@ -15,7 +15,7 @@ fun MangaDto.toManga(): Manga = Manga(
     tags = this.tags
 )
 
-fun GetMangaListResponse.toMangaLists(title: String? = null): MangaList = DataList(
+fun GetMangaListResponse.toMangaList(title: String? = null): MangaList = DataList(
     items = data.map(MangaDto::toManga),
     title = title,
     limit = limit,
@@ -23,7 +23,7 @@ fun GetMangaListResponse.toMangaLists(title: String? = null): MangaList = DataLi
     total = total
 )
 
-fun List<MangaDto>.toMangaLists(): MangaList = DataList(
+fun List<MangaDto>.toMangaList(): MangaList = DataList(
     items = map(MangaDto::toManga),
     limit = this.size
 )
@@ -54,5 +54,5 @@ fun MangaDto.getCoverImageUrl(): String? {
         ?.attributes
         ?.fileName ?: return null
 
-    return "https://uploads.mangadex.org/covers/${this.id}/$fileName.256.jpg"
+    return "https://uploads.mangadex.org/covers/${this.id}/$fileName.512.jpg"
 }
