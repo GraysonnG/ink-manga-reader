@@ -32,8 +32,8 @@ class ModelStateProvider(
         val activeState = getActiveState<T>(key = key)
         val stateExpired = activeState.expireTime < System.currentTimeMillis()
 
-        // if activeState is expired or the hard refresh flag is true
         modelStateScope.launch {
+            // if activeState is expired or the hard refresh flag is true
             if (stateExpired || hardRefresh) {
                 activeState.stateFlow.emit(
                     getNetworkDataAndPersist(
