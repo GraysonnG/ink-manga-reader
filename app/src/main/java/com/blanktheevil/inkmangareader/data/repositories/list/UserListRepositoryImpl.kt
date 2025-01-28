@@ -4,10 +4,8 @@ import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
-import com.blanktheevil.inkmangareader.data.dto.objects.MangaDto
+import com.blanktheevil.inkmangareader.data.dto.RelationshipType
 import com.blanktheevil.inkmangareader.data.dto.responses.GetUserListsResponse
-import com.blanktheevil.inkmangareader.data.models.MangaList
-import com.blanktheevil.inkmangareader.data.repositories.mappers.toMangaLists
 import com.blanktheevil.inkmangareader.data.repositories.makeAuthenticatedCall
 import com.blanktheevil.inkmangareader.data.repositories.makeCall
 
@@ -15,12 +13,12 @@ class UserListRepositoryImpl(
     private val mangaDexApi: MangaDexApi,
     private val sessionManager: SessionManager,
 ) : UserListRepository {
-    override suspend fun getLists(userId: String): Either<Map<String, MangaList>> =
+    override suspend fun getLists(userId: String): Either<Map<String, DataList<String>>> =
         makeCall {
             mangaDexApi.getUserLists(id = userId).toMangaLists()
         }
 
-    override suspend fun getCurrentLists(): Either<Map<String, MangaList>> =
+    override suspend fun getCurrentLists(): Either<Map<String, DataList<String>>> =
         makeAuthenticatedCall(sessionManager) { auth ->
             mangaDexApi.getCurrentUserLists(authorization = auth).toMangaLists()
         }
@@ -35,21 +33,16 @@ class UserListRepositoryImpl(
             mangaDexApi.removeMangaFromList(authorization = auth, id = mangaId, listId = listId)
         }
 
-    private suspend fun GetUserListsResponse.toMangaLists(): Map<String, MangaList> {
-        val listMap = data.associateWith {
-            it.relationships?.getAllOfType<MangaDto>()?.map { rel -> rel.id } ?: emptyList()
+    private fun GetUserListsResponse.toMangaLists(): Map<String, DataList<String>> =
+        data.associate {
+            val ids = it.relationships?.getAllOfType(RelationshipType.MANGA)?.map { rel -> rel.id } ?: emptyList()
+            it.id to DataList(
+                title = it.attributes.name,
+                items = ids,
+                offset = 0,
+                limit = ids.size,
+                total = ids.size,
+            )
         }
 
-        val mangaList = mangaDexApi.getManga(ids = listMap.values.flatten(), limit = 100, offset = 0)
-            .toMangaLists()
-
-        return listMap.map { (listData, mangaIds) ->
-            listData.id to DataList(
-                title = listData.attributes.name,
-                items = mangaList.items.filter { it.id in mangaIds },
-                limit = 100,
-                offset = 0,
-            )
-        }.toMap()
-    }
 }
