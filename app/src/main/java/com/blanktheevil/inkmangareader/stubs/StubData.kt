@@ -10,10 +10,11 @@ import java.util.UUID
 
 object StubData {
     fun manga(
-        title: String = "The Stub Manga!"
+        title: String = "The Stub Manga!",
+        coverArt: String? = null,
     ): Manga = Manga(
         id = UUID.randomUUID().toString(),
-        coverArt = "coverArt.jpg",
+        coverArt = coverArt,
         description = "This is a Stub Manga",
         tags = listOf("Romance", "Action", "Shounen"),
         title = title
