@@ -30,8 +30,11 @@ suspend fun <T> makeAuthenticatedCall(
     sessionManager: SessionManager,
     callback: suspend (auth: String) -> T?
 ) = makeCall {
-    if (sessionManager.session.value.isInvalid())
-        throw Exception("Session Expired or null")
+    if (sessionManager.session.value.isInvalid()) {
+        sessionManager.refresh()
+        if (sessionManager.session.value.isInvalid())
+            throw Exception("Session Expired or null")
+    }
 
     val validSession = sessionManager.session.value!!
     callback("Bearer ${validSession.token}")
