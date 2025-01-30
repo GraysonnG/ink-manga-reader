@@ -20,11 +20,13 @@ import com.blanktheevil.inkmangareader.data.room.InkDatabase
 import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
 import com.blanktheevil.inkmangareader.download.DownloadManager
 import com.blanktheevil.inkmangareader.download.DownloadManagerImpl
+import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import okhttp3.OkHttpClient
 import org.json.JSONObject
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.createdAtStart
 import org.koin.core.module.dsl.singleOf
@@ -95,4 +97,6 @@ val appModule = module {
     singleOf(::UserListRepositoryImpl) { bind<UserListRepository>() }
 
     singleOf(::ModelStateProvider)
+
+    viewModelOf(::DemoViewModel)
 }
