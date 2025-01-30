@@ -4,6 +4,7 @@ import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.dto.requests.MarkChapterReadRequest
+import com.blanktheevil.inkmangareader.data.map
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.repositories.ChapterListRequest
@@ -17,10 +18,11 @@ import com.blanktheevil.inkmangareader.data.repositories.makeOptionallyAuthentic
 import com.blanktheevil.inkmangareader.data.room.dao.ChapterDao
 import com.blanktheevil.inkmangareader.data.room.dao.ListDao
 import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
-import com.blanktheevil.inkmangareader.data.repositories.mappers.setReadMarkers
 import com.blanktheevil.inkmangareader.data.repositories.mappers.toChapter
 import com.blanktheevil.inkmangareader.data.repositories.mappers.toChapterList
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class ChapterRepositoryImpl(
     private val mangaDexApi: MangaDexApi,
@@ -122,19 +124,31 @@ class ChapterRepositoryImpl(
     private suspend fun handleChapterFeed(
         provider: suspend (auth: String?) -> ChapterList
     ): ChapterListEither = makeOptionallyAuthenticatedCall(sessionManager) { auth ->
-        val chapterList = provider(auth)
+        var chapterList = provider(auth)
         val mangaIds = chapterList.items.mapNotNull { it.relatedMangaId }.distinct()
-        val ids = mutableListOf<String>()
 
         if (auth != null) {
-            ids.addAll(
-                mangaDexApi.getReadChapterIdsByMangaIds(
-                    authorization = auth,
-                    ids = mangaIds,
-                ).data
-            )
+            coroutineScope {
+                launch {
+                    val ids = mangaDexApi.getReadChapterIdsByMangaIds(
+                        authorization = auth,
+                        ids = mangaIds,
+                    ).data
+
+                    for (id in ids) {
+                        val key = makeKey(CHAPTER_PREFIX, id)
+                        modelStateProvider.update<Chapter>(key) {
+                            copy(isRead = true)
+                        }
+                    }
+
+                    chapterList = chapterList.map {
+                        it.copy(isRead = it.id in ids)
+                    }
+                }
+            }
         }
 
-        chapterList.setReadMarkers(ids)
+        chapterList
     }
 }
