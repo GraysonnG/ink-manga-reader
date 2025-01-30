@@ -43,6 +43,13 @@ class SessionManager(
             localSession = it
         }
 
+    suspend fun refresh() {
+        localSession?.let {
+            val refresh = authRepository.refresh(it.refresh).successOrNull()
+            _session.value = refresh
+            localSession = refresh
+        }
+    }
 
     private var localSession: Session?
         get() = context.getSharedPreferences(SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE)
