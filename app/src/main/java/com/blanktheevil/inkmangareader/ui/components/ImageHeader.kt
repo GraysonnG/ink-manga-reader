@@ -6,9 +6,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.TopAppBarDefaults
@@ -38,17 +40,21 @@ fun ImageHeader(
     headerArea: @Composable BoxScope.(scrollFraction: Float) -> Unit,
     content: @Composable (NestedScrollConnection) -> Unit
 ) {
+    val statusBarSize = with (LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         state = rememberTopAppBarState()
     )
+
+    val expandedHeight = initialHeight.plus(statusBarSize)
+    val collapsedHeight = minHeight.plus(statusBarSize)
     val expandedHeightPx: Float
     val collapsedHeightPx: Float
     val boxAlphaMax = 1f
     val boxAlphaMin = 0f
 
     LocalDensity.current.run {
-        expandedHeightPx = initialHeight.toPx()
-        collapsedHeightPx = minHeight.toPx()
+        expandedHeightPx = expandedHeight.toPx()
+        collapsedHeightPx = collapsedHeight.toPx()
     }
 
     SideEffect {
@@ -57,14 +63,13 @@ fun ImageHeader(
         }
     }
 
-
     val coverImage = url.toAsyncPainterImage(
         crossfade = true,
         placeholder = placeholder,
     )
 
     val height = remember(scrollBehavior.state.collapsedFraction) {
-        minHeight + (initialHeight - minHeight).times(1 - scrollBehavior.state.collapsedFraction)
+        collapsedHeight + (expandedHeight - collapsedHeight).times(1 - scrollBehavior.state.collapsedFraction)
     }
 
     val boxAlpha = remember(scrollBehavior.state.collapsedFraction) {
@@ -77,7 +82,7 @@ fun ImageHeader(
         Box(
             Modifier
                 .height(height)
-                .heightIn(min = minHeight, max = initialHeight)
+                .heightIn(min = collapsedHeight, max = expandedHeight)
         ) {
             Image(
                 modifier = Modifier

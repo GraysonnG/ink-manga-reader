@@ -1,5 +1,7 @@
 package com.blanktheevil.inkmangareader.ui.pages
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -39,6 +42,7 @@ import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
+import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.components.ImageHeader
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.State
@@ -48,14 +52,21 @@ import dev.jeziellago.compose.markdowntext.MarkdownText
 @Composable
 fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Params>(
     viewModelParams = Params(mangaId)
-) {uiState, _ ->
-    val manga = uiState.manga ?: return@BasePage
-
-    MangaDetailLayout(manga)
+) {_, uiState, _ ->
+    val nav = LocalNavController.current
+    uiState.manga?.let { manga ->
+        MangaDetailLayout(manga) {
+            nav.popBackStack()
+        }
+    }
 }
 
 @Composable
-private fun MangaDetailLayout(manga: Manga) {
+private fun MangaDetailLayout(
+    manga: Manga,
+    @DrawableRes headerPlaceholderImage: Int? = null,
+    onBackButtonClicked: () -> Unit = {},
+) {
     val headerHeight = LocalConfiguration.current.screenHeightDp.dp.times(0.5f)
 
     ImageHeader(
@@ -63,19 +74,30 @@ private fun MangaDetailLayout(manga: Manga) {
         minHeight = 64.dp,
         url = manga.coverArt,
         headerArea = {
-            HeaderArea(manga = manga, scrollFraction = it)
+            HeaderArea(
+                manga = manga,
+                scrollFraction = it,
+                onBackButtonClicked = onBackButtonClicked,
+            )
         },
-        placeholder = R.drawable.manga_placeholder,
+        placeholder = headerPlaceholderImage,
     ) { nestedScrollConnection ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .nestedScroll(nestedScrollConnection)
+                .nestedScroll(nestedScrollConnection),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 MarkdownText(
                     manga.description,
-                    linkColor = MaterialTheme.colorScheme.primary
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .padding(horizontal = 8.dp)
+                    ,
+                    linkColor = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 99,
                 )
             }
             
@@ -87,7 +109,11 @@ private fun MangaDetailLayout(manga: Manga) {
 }
 
 @Composable
-private fun HeaderArea(manga: Manga, scrollFraction: Float) = Column(
+private fun HeaderArea(
+    manga: Manga,
+    scrollFraction: Float,
+    onBackButtonClicked: () -> Unit,
+) = Column(
     modifier = Modifier.fillMaxSize()
 ) {
     val statusBarSize = with (LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
@@ -113,7 +139,7 @@ private fun HeaderArea(manga: Manga, scrollFraction: Float) = Column(
         ) {
             IconButton(
                 colors = iconButtonColors,
-                onClick = { /*TODO*/ }
+                onClick = onBackButtonClicked,
             ) {
                 InkIcon(resId = R.drawable.round_arrow_back_24)
             }
@@ -125,6 +151,7 @@ private fun HeaderArea(manga: Manga, scrollFraction: Float) = Column(
                     .weight(1f)
                     .alpha(scrollFraction),
                 text = manga.title,
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -181,8 +208,11 @@ private fun BoxScope.TitleDetailContent(
 @Composable
 @PreviewLightDark
 private fun Preview() = DefaultPreview {
-    MangaDetailLayout(manga = StubData.manga(
-        title = "A really really long title of a manga because the japanese need help",
-        coverArt = "https://mangadex.org/covers/141609b6-cf86-4266-904c-6648f389cdc9/bd903567-ae7e-433a-8a8d-65ceee3fc123.jpg"
-    ))
+    MangaDetailLayout(
+        manga = StubData.manga(
+            title = "A really really long title of a manga because the japanese need help",
+            coverArt = "https://mangadex.org/covers/141609b6-cf86-4266-904c-6648f389cdc9/bd903567-ae7e-433a-8a8d-65ceee3fc123.jpg"
+        ),
+        headerPlaceholderImage = R.drawable.manga_placeholder
+    )
 }

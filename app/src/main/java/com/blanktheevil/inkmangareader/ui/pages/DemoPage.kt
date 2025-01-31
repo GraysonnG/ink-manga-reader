@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import com.blanktheevil.inkmangareader.BuildConfig
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.emptyDataList
+import com.blanktheevil.inkmangareader.navigation.navigateToMangaDetail
+import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.components.FeatureCarousel
 import com.blanktheevil.inkmangareader.ui.components.MangaFeed
 import com.blanktheevil.inkmangareader.ui.components.MangaShelf
@@ -21,18 +23,23 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
-fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.DemoParams> { uiState, authenticated ->
+fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.DemoParams> {_, uiState, authenticated ->
     val sessionManager = koinInject<SessionManager>()
     val scope = rememberCoroutineScope()
+    val nav = LocalNavController.current
 
     LazyColumn {
         item(key = "Seasonal") {
-            FeatureCarousel(mangaList = uiState.seasonalList ?: emptyDataList())
+            FeatureCarousel(mangaList = uiState.seasonalList ?: emptyDataList()) {
+                nav.navigateToMangaDetail(mangaId = it)
+            }
         }
         item { Spacer(modifier = Modifier.size(16.dp)) }
         if (authenticated) {
             item {
-                MangaFeed(feed = uiState.chapterFeed)
+                MangaFeed(feed = uiState.chapterFeed) {
+                    nav.navigateToMangaDetail(mangaId = it)
+                }
                 Spacer(modifier = Modifier.size(16.dp))
             }
         }
@@ -49,12 +56,16 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
         }
 
         items(listOfNotNull(uiState.popularList, uiState.recentList)) {
-            MangaShelf(mangaList = it)
+            MangaShelf(mangaList = it) { mangaId ->
+                nav.navigateToMangaDetail(mangaId = mangaId)
+            }
             Spacer(modifier = Modifier.size(16.dp))
         }
 
         items(uiState.userLists) {
-            MangaShelf(mangaList = it)
+            MangaShelf(mangaList = it) { mangaId ->
+                nav.navigateToMangaDetail(mangaId = mangaId)
+            }
             Spacer(modifier = Modifier.size(16.dp))
         }
     }

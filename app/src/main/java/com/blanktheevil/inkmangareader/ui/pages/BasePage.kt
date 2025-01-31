@@ -17,7 +17,7 @@ import org.koin.compose.koinInject
 @Composable
 inline fun <reified VM: BaseViewModel<UIState, Params>, UIState: BaseViewModelState, Params> BasePage(
     viewModelParams: Params? = null,
-    noinline content: @Composable VM.(uiState: UIState, authenticated: Boolean) -> Unit,
+    noinline content: @Composable BasePageScope.(viewModel: VM, uiState: UIState, authenticated: Boolean) -> Unit,
 ) {
     val sessionManager = koinInject<SessionManager>()
     val session by sessionManager.session.collectAsState()
@@ -31,6 +31,10 @@ inline fun <reified VM: BaseViewModel<UIState, Params>, UIState: BaseViewModelSt
     PullToRefreshBox(isRefreshing = state.loading, onRefresh = {
         viewModel.initViewModel(true, viewModelParams)
     }) {
-        content(viewModel, state, session.isValid())
+        BasePageScopeInstance.content(viewModel, state, session.isValid())
     }
 }
+
+interface BasePageScope
+
+internal object BasePageScopeInstance : BasePageScope

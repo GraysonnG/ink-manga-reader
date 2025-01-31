@@ -12,14 +12,24 @@ class MangaDetailViewModel(
     State()
 ) {
     override fun initViewModel(hardRefresh: Boolean, params: Params?): Job = viewModelScope.launch {
+        updateState {
+            if (hardRefresh) {
+                State()
+            } else {
+                copy(
+                    loading = true,
+                )
+            }
+        }
         params?.mangaId?.let { mangaId ->
             getMangaData(mangaId = mangaId, hardRefresh = hardRefresh)
         }
     }
 
-    private fun getMangaData(mangaId: String, hardRefresh: Boolean) = viewModelScope.launch {
+    private suspend fun getMangaData(mangaId: String, hardRefresh: Boolean) = viewModelScope.launch {
+        updateState { copy(loading = true) }
         mangaRepository.get(mangaId, hardRefresh = hardRefresh).collect {
-            it.onSuccess {
+            it.onSuccess { manga ->
                 updateState { copy(
                     loading = false,
                     manga = manga,
@@ -27,6 +37,12 @@ class MangaDetailViewModel(
             }
 
             it.onError {
+                updateState { copy(
+                    loading = false,
+                ) }
+            }
+
+            it.onNull {
                 updateState { copy(
                     loading = false,
                 ) }

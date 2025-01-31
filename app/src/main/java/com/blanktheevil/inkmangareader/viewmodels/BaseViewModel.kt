@@ -24,7 +24,8 @@ abstract class BaseViewModel<T : BaseViewModelState, R>(
 
 
     fun updateState(update: T.() -> T) {
-        _uiState.value = update(_uiState.value)
+        val updatedValue = update(_uiState.value)
+        _uiState.value = updatedValue
     }
 }
 

@@ -2,6 +2,7 @@ package com.blanktheevil.inkmangareader.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -41,7 +43,10 @@ import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 
 @Composable
-fun FeatureCarousel(mangaList: MangaList) {
+fun FeatureCarousel(
+    mangaList: MangaList,
+    onItemClicked: (mangaId: String) -> Unit = {}
+) {
         val configuration = LocalConfiguration.current
         val screenHeight = configuration.screenHeightDp.dp
 
@@ -68,7 +73,10 @@ fun FeatureCarousel(mangaList: MangaList) {
                 val index = remember {
                     it % mangaList.items.size
                 }
-                FeatureItem(manga = mangaList.items[index])
+                FeatureItem(
+                    manga = mangaList.items[index],
+                    onItemClicked = onItemClicked
+                )
             }
 
             Row(
@@ -95,7 +103,10 @@ fun FeatureCarousel(mangaList: MangaList) {
 }
 
 @Composable
-private inline fun FeatureItem(manga: Manga) {
+private inline fun FeatureItem(
+    manga: Manga,
+    crossinline onItemClicked: (mangaId: String) -> Unit,
+) {
     val coverImage = manga.coverArt
         .toAsyncPainterImage(crossfade = true)
 
@@ -152,7 +163,7 @@ private inline fun FeatureItem(manga: Manga) {
                     style = MaterialTheme.typography.bodySmall,
                     lineHeight = 14.sp
                 )
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = { onItemClicked(manga.id) }) {
                     InkIcon(resId = R.drawable.read_24)
                     Spacer(modifier = Modifier.size(4.dp))
                     Text(text = "Read")

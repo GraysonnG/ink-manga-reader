@@ -38,6 +38,7 @@ import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 fun MangaFeed(
     feed: Map<Manga, List<Chapter>>,
     modifier: Modifier = Modifier,
+    onClick: (mangaId: String) -> Unit,
 ) = Column {
     RowLink(title = "My Updates")
     Spacer(modifier = Modifier.size(8.dp))
@@ -49,7 +50,7 @@ fun MangaFeed(
         item { Spacer(modifier = Modifier) }
         if (feed.isNotEmpty()) {
             items(feed.entries.toList()) { (manga, list) ->
-                MangaItem(manga = manga, chapters = list)
+                MangaItem(manga = manga, chapters = list, onClick = onClick)
             }
         } else {
             items(4) {
@@ -61,15 +62,20 @@ fun MangaFeed(
 }
 
 @Composable
-private fun MangaItem(manga: Manga, chapters: List<Chapter>) = Column(
+private fun MangaItem(
+    manga: Manga,
+    chapters: List<Chapter>,
+    onClick: (mangaId: String) -> Unit,
+) = Column(
     modifier = Modifier
         .width(110.dp)
         .clip(RoundedCornerShape(8.dp))
         .clickable(
             interactionSource = null,
             indication = ripple(),
-            role = Role.Button
-        ) { }
+            role = Role.Button,
+            onClick = { onClick(manga.id) },
+        )
 ) {
     val coverImage = manga.coverArt.toAsyncPainterImage(crossfade = true)
     val unreadChapters = chapters.filter { it.isRead == false }.size
@@ -139,7 +145,7 @@ private fun Preview() = DefaultPreview {
     val chapterList = StubData.chapterList(length = 3)
 
     Column(modifier = Modifier.fillMaxSize()) {
-        MangaFeed(mangaList.items.associateWith { chapterList.items })
-        MangaFeed(feed = emptyMap())
+        MangaFeed(mangaList.items.associateWith { chapterList.items }) {}
+        MangaFeed(feed = emptyMap()) {}
     }
 }

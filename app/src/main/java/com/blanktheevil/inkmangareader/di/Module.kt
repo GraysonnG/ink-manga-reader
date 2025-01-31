@@ -21,6 +21,7 @@ import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
 import com.blanktheevil.inkmangareader.download.DownloadManager
 import com.blanktheevil.inkmangareader.download.DownloadManagerImpl
 import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
+import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import okhttp3.OkHttpClient
@@ -99,4 +100,5 @@ val appModule = module {
     singleOf(::ModelStateProvider)
 
     viewModelOf(::DemoViewModel)
+    viewModelOf(::MangaDetailViewModel)
 }
