@@ -25,8 +25,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -38,6 +36,7 @@ import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.models.MangaList
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
+import com.blanktheevil.inkmangareader.ui.Gradients
 import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 
@@ -121,7 +120,7 @@ private inline fun FeatureItem(manga: Manga) {
                 modifier = Modifier
                     .heightIn(min = 10.dp)
                     .fillMaxSize()
-                    .background(transparentToBlack)
+                    .background(Gradients.transparentToBlack)
             )
 
             Column(
@@ -162,15 +161,6 @@ private inline fun FeatureItem(manga: Manga) {
         }
     }
 }
-
-private val transparentToBlack = Brush.linearGradient(
-    colors = listOf(
-        Color.Black.copy(alpha = 0f),
-        Color.Black.copy(alpha = 0.9f),
-    ),
-    start = Offset.Zero,
-    end = Offset.Infinite.copy(x = 0f),
-)
 
 @Composable
 @PreviewLightDark

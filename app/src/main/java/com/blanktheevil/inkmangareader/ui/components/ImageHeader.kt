@@ -18,11 +18,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import com.blanktheevil.inkmangareader.ui.Gradients
 import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,8 +43,8 @@ fun ImageHeader(
     )
     val expandedHeightPx: Float
     val collapsedHeightPx: Float
-    val boxAlphaMax = 0.8f
-    val boxAlphaMin = 0.3f
+    val boxAlphaMax = 1f
+    val boxAlphaMin = 0f
 
     LocalDensity.current.run {
         expandedHeightPx = initialHeight.toPx()
@@ -87,8 +89,22 @@ fun ImageHeader(
 
             Box(
                 Modifier
+                    .alpha(1 - boxAlpha)
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = boxAlpha))
+                    .background(Gradients.transparentToBlack)
+            ) {
+                CompositionLocalProvider(
+                    LocalContentColor provides Color.White
+                ) {
+                    headerArea(scrollBehavior.state.collapsedFraction)
+                }
+            }
+
+            Box(
+                Modifier
+                    .alpha(boxAlpha * 0.8f)
+                    .fillMaxSize()
+                    .background(Color.Black)
             ) {
                 CompositionLocalProvider(
                     LocalContentColor provides Color.White

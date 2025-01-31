@@ -98,6 +98,8 @@ dependencies {
     implementation(libs.room)
     implementation(libs.room.ktx)
 
+    implementation(libs.compose.markdown)
+
     ksp(libs.moshi.codegen)
     ksp(libs.room.compiler)
 
