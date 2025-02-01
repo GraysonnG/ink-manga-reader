@@ -10,18 +10,14 @@ data class GetMangaAggregateResponse(
 
 @JsonClass(generateAdapter = true)
 data class AggregateVolumeDto(
-    val volume: String?,
+    val volume: String = "none",
     val chapters: Map<String, AggregateChapterDto>,
 )
 
 @JsonClass(generateAdapter = true)
 data class AggregateChapterDto(
-    val chapter: String?,
+    val chapter: String = "null",
     val id: String,
+    val others: List<String>,
+    val count: Int,
 )
-
-fun GetMangaAggregateResponse.getChapters(): Map<String, AggregateChapterDto> {
-    return volumes.values.flatMap { it.chapters.entries }.associate {
-        Pair(it.key, it.value)
-    }
-}
