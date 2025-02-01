@@ -69,11 +69,13 @@ fun ImageHeader(
     )
 
     val height = remember(scrollBehavior.state.collapsedFraction) {
-        collapsedHeight + (expandedHeight - collapsedHeight).times(1 - scrollBehavior.state.collapsedFraction)
+        collapsedHeight + (expandedHeight - collapsedHeight)
+            .times(1 - scrollBehavior.state.collapsedFraction)
     }
 
     val boxAlpha = remember(scrollBehavior.state.collapsedFraction) {
-        boxAlphaMin + (boxAlphaMax - boxAlphaMin).times(scrollBehavior.state.collapsedFraction)
+        boxAlphaMin + (boxAlphaMax - boxAlphaMin)
+            .times(scrollBehavior.state.collapsedFraction)
     }
 
     Column(
@@ -92,33 +94,24 @@ fun ImageHeader(
                 contentScale = ContentScale.Crop,
             )
 
-            Box(
-                Modifier
-                    .alpha(1 - boxAlpha)
-                    .fillMaxSize()
-                    .background(Gradients.transparentToBlack)
-            ) {
-                CompositionLocalProvider(
-                    LocalContentColor provides Color.White
+            CompositionLocalProvider(LocalContentColor provides Color.White) {
+                Box(
+                    Modifier
+                        .alpha(1 - boxAlpha)
+                        .fillMaxSize()
+                        .background(Gradients.transparentToBlack)
+                )
+
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = boxAlpha * 0.8f))
                 ) {
                     headerArea(scrollBehavior.state.collapsedFraction)
                 }
             }
 
-            Box(
-                Modifier
-                    .alpha(boxAlpha * 0.8f)
-                    .fillMaxSize()
-                    .background(Color.Black)
-            ) {
-                CompositionLocalProvider(
-                    LocalContentColor provides Color.White
-                ) {
-                    headerArea(scrollBehavior.state.collapsedFraction)
-                }
-            }
         }
-
         content(scrollBehavior.nestedScrollConnection)
     }
 }
