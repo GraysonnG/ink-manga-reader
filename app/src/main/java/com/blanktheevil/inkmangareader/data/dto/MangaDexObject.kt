@@ -145,6 +145,9 @@ class RelationshipList : ArrayList<GenericMangaDexObject>() {
     inline fun <reified T : GenericMangaDexObject> getFirstOfType(): T? =
         this.filterIsInstance(T::class.java).firstOrNull()
 
+    fun getFirstOfType(type: String): GenericMangaDexObject? =
+        this.firstOrNull { it.type == type }
+
     inline fun <reified T : GenericMangaDexObject> getAllOfType(): List<T> =
         this.filterIsInstance(T::class.java)
 

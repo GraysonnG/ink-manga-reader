@@ -1,6 +1,7 @@
 package com.blanktheevil.inkmangareader.data.repositories.mappers
 
 import com.blanktheevil.inkmangareader.data.DataList
+import com.blanktheevil.inkmangareader.data.dto.RelationshipType
 import com.blanktheevil.inkmangareader.data.dto.objects.ChapterDto
 import com.blanktheevil.inkmangareader.data.dto.objects.MangaDto
 import com.blanktheevil.inkmangareader.data.dto.objects.ScanlationGroupDto
@@ -11,11 +12,11 @@ import com.blanktheevil.inkmangareader.data.models.ChapterTitle
 
 fun ChapterDto.toChapter(): Chapter {
     val relatedManga = relationships?.getFirstOfType<MangaDto>()
-    val relatedMangaId =
-        relatedManga?.id ?: relationships?.firstOrNull { it.type == "manga" }?.id
+    val relatedMangaId = relatedManga?.id
+        ?: relationships?.getFirstOfType(RelationshipType.MANGA)?.id
     val relatedScanGroup = relationships?.getFirstOfType<ScanlationGroupDto>()
     val relatedScanGroupId = relatedScanGroup?.id
-        ?: relationships?.firstOrNull { it.type == "scanlation_group" }?.id
+        ?: relationships?.getFirstOfType(RelationshipType.SCANLATION_GROUP)?.id
 
     return Chapter(
         id = this.id,
