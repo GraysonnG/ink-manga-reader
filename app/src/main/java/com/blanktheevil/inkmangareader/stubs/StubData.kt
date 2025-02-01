@@ -34,8 +34,8 @@ object StubData {
 
     fun chapter(
         title: String = "Stub Chapter",
-        chapter: Int = 1,
-        volume: Int = 1,
+        chapter: Int? = 1,
+        volume: Int? = 1,
         externalUrl: String? = null,
         isRead: Boolean = false,
         scanlationGroupName: String = "Stub ScanlationGroup"
@@ -60,11 +60,13 @@ object StubData {
 
     fun chapterList(
         title: String = "Stub Chapter List",
+        vol: (Int) -> Int? = { it },
         length: Int,
     ): ChapterList = ChapterList(
         items = List(size = length) {
             chapter(
-                chapter = it
+                chapter = it,
+                volume = vol(it)
             )
         }
     )
