@@ -2,7 +2,6 @@ package com.blanktheevil.inkmangareader.data.repositories.list
 
 import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
-import com.blanktheevil.inkmangareader.data.models.MangaList
 
 interface UserListRepository {
     suspend fun getLists(userId: String): Either<Map<String, DataList<String>>>

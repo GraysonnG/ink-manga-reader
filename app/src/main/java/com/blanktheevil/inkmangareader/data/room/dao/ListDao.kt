@@ -6,9 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.models.BaseItem
-import com.blanktheevil.inkmangareader.data.models.Chapter
-import com.blanktheevil.inkmangareader.data.models.Manga
-import com.blanktheevil.inkmangareader.data.models.MangaList
 import com.blanktheevil.inkmangareader.data.room.models.ListModel
 import com.blanktheevil.inkmangareader.data.room.models.toModel
 

@@ -1,8 +1,8 @@
 package com.blanktheevil.inkmangareader.stubs
 
 import com.blanktheevil.inkmangareader.data.Either
-import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.models.Manga
+import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaListEither
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import com.blanktheevil.inkmangareader.data.success

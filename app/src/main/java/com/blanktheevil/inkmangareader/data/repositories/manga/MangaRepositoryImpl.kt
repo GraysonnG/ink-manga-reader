@@ -2,22 +2,22 @@ package com.blanktheevil.inkmangareader.data.repositories.manga
 
 import android.util.Log
 import com.blanktheevil.inkmangareader.data.Either
-import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.Sorting
 import com.blanktheevil.inkmangareader.data.api.GithubApi
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.models.Manga
+import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.getListFromRoom
 import com.blanktheevil.inkmangareader.data.repositories.insertIntoRoom
-import com.blanktheevil.inkmangareader.data.repositories.makeKey
 import com.blanktheevil.inkmangareader.data.repositories.makeAuthenticatedCall
 import com.blanktheevil.inkmangareader.data.repositories.makeCall
-import com.blanktheevil.inkmangareader.data.room.dao.MangaDao
-import com.blanktheevil.inkmangareader.data.room.dao.ListDao
-import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
+import com.blanktheevil.inkmangareader.data.repositories.makeKey
 import com.blanktheevil.inkmangareader.data.repositories.mappers.toManga
 import com.blanktheevil.inkmangareader.data.repositories.mappers.toMangaList
+import com.blanktheevil.inkmangareader.data.room.dao.ListDao
+import com.blanktheevil.inkmangareader.data.room.dao.MangaDao
+import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
 import kotlinx.coroutines.flow.StateFlow
 
 class MangaRepositoryImpl(

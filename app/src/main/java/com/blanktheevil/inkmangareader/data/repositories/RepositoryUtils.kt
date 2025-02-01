@@ -3,14 +3,14 @@ package com.blanktheevil.inkmangareader.data.repositories
 import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
+import com.blanktheevil.inkmangareader.data.error
 import com.blanktheevil.inkmangareader.data.isExpired
+import com.blanktheevil.inkmangareader.data.isInvalid
 import com.blanktheevil.inkmangareader.data.models.BaseItem
 import com.blanktheevil.inkmangareader.data.room.dao.BaseDao
 import com.blanktheevil.inkmangareader.data.room.dao.ListDao
 import com.blanktheevil.inkmangareader.data.room.models.BaseModel
 import com.blanktheevil.inkmangareader.data.success
-import com.blanktheevil.inkmangareader.data.error
-import com.blanktheevil.inkmangareader.data.isInvalid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.blanktheevil.inkmangareader.navigation.PrimaryNavGraph
 import com.blanktheevil.inkmangareader.ui.LocalNavController
-import com.blanktheevil.inkmangareader.ui.pages.DemoPage
 import com.blanktheevil.inkmangareader.ui.theme.InkMangaReaderTheme
 
 class MainActivity : ComponentActivity() {

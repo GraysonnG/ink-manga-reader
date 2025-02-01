@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -76,7 +77,7 @@ fun ColumnScope.ChapterButton(chapter: Chapter) = Column {
         /* TODO */
     }
 
-    chapter.relatedScanlationGroup?.GroupLink(
+    chapter.relatedScanlationGroup.GroupLink(
         chapterDownloaded = chapterDownloaded
     )
 }
@@ -99,7 +100,6 @@ private fun InternalButton(
     SimpleInkButton(
         onClick = onClick,
         title = {
-
             InkIcon(
                 resId = if(isRead) R.drawable.round_check_circle_24 else R.drawable.outline_circle_24,
                 modifier = Modifier.padding(start = 12.dp),
@@ -178,7 +178,7 @@ private fun InternalButton(
 }
 
 @Composable
-private fun ScanlationGroup.GroupLink(
+private fun ScanlationGroup?.GroupLink(
     chapterDownloaded: Boolean,
 ) = Row(
     modifier = Modifier.padding(start = 16.dp),
@@ -196,8 +196,9 @@ private fun ScanlationGroup.GroupLink(
         )
 
         Text(
-            this@GroupLink.name,
+            this@GroupLink?.name ?: "No Group",
             modifier = Modifier
+                .widthIn(max = 300.dp)
                 .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp))
                 .background(LocalContentColor.current.copy(alpha = 0.2f))
                 .padding(4.dp),

@@ -4,9 +4,9 @@ import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.models.User
-import com.blanktheevil.inkmangareader.data.repositories.mappers.toUser
 import com.blanktheevil.inkmangareader.data.repositories.makeAuthenticatedCall
 import com.blanktheevil.inkmangareader.data.repositories.makeCall
+import com.blanktheevil.inkmangareader.data.repositories.mappers.toUser
 
 class UserRepositoryImpl(
     private val mangaDexApi: MangaDexApi,

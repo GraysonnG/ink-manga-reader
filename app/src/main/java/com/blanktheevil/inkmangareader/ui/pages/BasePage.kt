@@ -28,9 +28,12 @@ inline fun <reified VM: BaseViewModel<UIState, Params>, UIState: BaseViewModelSt
         viewModel.initViewModel(false, viewModelParams)
     }
 
-    PullToRefreshBox(isRefreshing = state.loading, onRefresh = {
-        viewModel.initViewModel(true, viewModelParams)
-    }) {
+    PullToRefreshBox(
+        isRefreshing = state.loading,
+        onRefresh = {
+            viewModel.initViewModel(true, viewModelParams)
+        }
+    ) {
         BasePageScopeInstance.content(viewModel, state, session.isValid())
     }
 }
