@@ -5,6 +5,7 @@ import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaListEither
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
+import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
 import com.blanktheevil.inkmangareader.data.success
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +31,10 @@ class MangaRepositoryStub : MangaRepository {
     }
 
     override suspend fun getFollowing(mangaId: String): Either<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getAggregate(mangaId: String): Either<List<LinkedChapter>> {
         TODO("Not yet implemented")
     }
 }

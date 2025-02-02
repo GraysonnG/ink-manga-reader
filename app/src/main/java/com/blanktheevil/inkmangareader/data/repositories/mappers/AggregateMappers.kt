@@ -2,12 +2,12 @@ package com.blanktheevil.inkmangareader.data.repositories.mappers
 
 import com.blanktheevil.inkmangareader.data.dto.responses.GetMangaAggregateResponse
 
-fun GetMangaAggregateResponse.getChapters(): List<LinkedChapter> =
+fun GetMangaAggregateResponse.toLinkedChapters(): List<LinkedChapter> =
     volumes.values
         .flatMap { it.chapters.entries.map { ch -> Pair(it.volume, ch) } }
         .let { data -> data.mapIndexed { index, (volume, ch) ->
-            val prevId = data.getOrNull(index - 1)?.second?.value?.id
-            val nextId = data.getOrNull(index + 1)?.second?.value?.id
+            val prevId = data.getOrNull(index + 1)?.second?.value?.id
+            val nextId = data.getOrNull(index - 1)?.second?.value?.id
 
             LinkedChapter(
                 volume = volume,

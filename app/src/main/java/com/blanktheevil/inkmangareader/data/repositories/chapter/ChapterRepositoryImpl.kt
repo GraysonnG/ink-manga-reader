@@ -47,6 +47,11 @@ class ChapterRepositoryImpl(
         persist = { chapter -> chapterDao.insertModel(chapter) },
     )
 
+    override suspend fun getEager(chapterId: String): Either<Chapter> = makeCall {
+        get(chapterId = chapterId, hardRefresh = false).value.successOrNull()
+            ?: mangaDexApi.getChapter(id = chapterId).data.toChapter()
+    }
+
     override suspend fun getList(
         request: ChapterListRequest,
         limit: Int,

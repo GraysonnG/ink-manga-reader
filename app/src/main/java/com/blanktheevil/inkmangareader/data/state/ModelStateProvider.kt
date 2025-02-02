@@ -1,5 +1,6 @@
 package com.blanktheevil.inkmangareader.data.state
 
+import android.util.Log
 import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.models.BaseItem
@@ -31,6 +32,7 @@ class ModelStateProvider(
     ): StateFlow<Either<T>> {
         val activeState = getActiveState<T>(key = key)
         val stateExpired = activeState.expireTime < System.currentTimeMillis()
+        states[key] = activeState
 
         modelStateScope.launch {
             // if activeState is expired or the hard refresh flag is true
@@ -62,6 +64,7 @@ class ModelStateProvider(
         persist: (suspend (T) -> Unit)? = null,
         update: T.() -> T
     ) {
+        Log.d("Update", key)
         val activeState = getActiveState<T>(key = key)
         activeState.stateFlow.value.successOrNull()?.let {
             val newState = update(it)
@@ -71,8 +74,10 @@ class ModelStateProvider(
         }
     }
 
-    private suspend fun <T : BaseItem> notifyItemListOfChange(itemChanged: T) =
-        states.values.filterIsInstance<ActiveState<DataList<T>>>()
+    private suspend inline fun <reified T : BaseItem> notifyItemListOfChange(itemChanged: T) =
+        states.values
+            .filterIsListOfBaseItem(itemChanged.type)
+            .filterIsInstance<ActiveState<DataList<T>>>()
             .associate { it.stateFlow to it.stateFlow.value.successOrNull() }
             .forEach { (flow, data) ->
                 if (data == null) return@forEach
@@ -82,9 +87,24 @@ class ModelStateProvider(
                         set(indexOfItem, itemChanged)
                     }
 
+                    Log.d("Notify List Change", "${itemChanged.type.split(".").lastOrNull()} List: ${data.title}")
                     flow.emit(success(data.copy(items = newList)))
                 }
             }
+
+    private fun MutableCollection<ActiveState<*>>.filterIsListOfBaseItem(
+        baseItemType: String,
+    ) = filter {
+        it.stateFlow.value.successOrNull()?.let { t ->
+            if (t::class.java != DataList::class.java) {
+                return@filter false
+            } else {
+                return@filter (t as DataList<*>).items.firstOrNull()?.let { t2 ->
+                    t2::class.java.name == baseItemType
+                } ?: false
+            }
+        } ?: false
+    }
 
     private suspend fun <T> getNetworkDataAndPersist(
         activeState: ActiveState<T>,
@@ -94,7 +114,6 @@ class ModelStateProvider(
         either.onSuccess {
             persist?.invoke(it)
             activeState.expireTime = System.currentTimeMillis() + EXPIRE_TIME
-            if (it is BaseItem) { notifyItemListOfChange(it) }
             modelStateDao.insert(
                 ModelStateModel(
                     key = activeState.key,

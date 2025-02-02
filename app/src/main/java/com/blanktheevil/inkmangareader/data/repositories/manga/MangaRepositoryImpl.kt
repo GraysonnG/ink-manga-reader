@@ -13,6 +13,8 @@ import com.blanktheevil.inkmangareader.data.repositories.insertIntoRoom
 import com.blanktheevil.inkmangareader.data.repositories.makeAuthenticatedCall
 import com.blanktheevil.inkmangareader.data.repositories.makeCall
 import com.blanktheevil.inkmangareader.data.repositories.makeKey
+import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
+import com.blanktheevil.inkmangareader.data.repositories.mappers.toLinkedChapters
 import com.blanktheevil.inkmangareader.data.repositories.mappers.toManga
 import com.blanktheevil.inkmangareader.data.repositories.mappers.toMangaList
 import com.blanktheevil.inkmangareader.data.room.dao.ListDao
@@ -87,6 +89,12 @@ class MangaRepositoryImpl(
         makeAuthenticatedCall(sessionManager) { auth ->
             mangaDexApi.getIsUserFollowingManga(authorization = auth, id = mangaId)
             Unit
+        }
+
+    override suspend fun getAggregate(mangaId: String): Either<List<LinkedChapter>> =
+        makeCall {
+            mangaDexApi.getMangaAggregate(id = mangaId)
+                .toLinkedChapters()
         }
 
     private fun <T : MangaListRequest> T.getNetworkProvider(

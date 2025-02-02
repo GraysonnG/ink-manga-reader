@@ -59,7 +59,7 @@ fun Volume(title: String, chapters: List<Chapter>) = Column(
             InkIcon(resId = R.drawable.baseline_more_horiz_24)
         }
     }
-    val chaptersGrouped = remember {
+    val chaptersGrouped = remember(chapters) {
         chapters.groupBy { it.chapter }
     }
 

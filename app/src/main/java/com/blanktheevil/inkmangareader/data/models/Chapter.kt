@@ -6,6 +6,7 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class Chapter(
     override val id: String,
+    override val type: String = Chapter::class.java.name,
     val title: ChapterTitle,
     val volume: String?,
     val chapter: String?,

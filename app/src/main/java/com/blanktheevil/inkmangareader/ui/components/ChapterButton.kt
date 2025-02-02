@@ -44,6 +44,7 @@ import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.ScanlationGroup
 import com.blanktheevil.inkmangareader.download.DownloadManager
+import com.blanktheevil.inkmangareader.reader.ReaderManager
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
@@ -55,6 +56,7 @@ import org.koin.compose.koinInject
 @Composable
 fun ColumnScope.ChapterButton(chapter: Chapter) = Column {
     val downloadManager: DownloadManager = koinInject()
+    val readerManager: ReaderManager = koinInject()
     var chapterDownloaded by remember { mutableStateOf(false) }
 
     suspend fun refreshIsDownloaded() {
@@ -74,7 +76,7 @@ fun ColumnScope.ChapterButton(chapter: Chapter) = Column {
         refreshIsDownloaded = ::refreshIsDownloaded,
         downloadManager = downloadManager
     ) {
-        /* TODO */
+        readerManager.setChapter(chapter.id)
     }
 
     chapter.relatedScanlationGroup.GroupLink(

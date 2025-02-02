@@ -13,6 +13,7 @@ import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
 import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
@@ -53,7 +54,9 @@ class DemoViewModel(
         }
     }
 
-    private fun getSeasonal(hardRefresh: Boolean) = viewModelScope.launch {
+    private fun getSeasonal(hardRefresh: Boolean) = viewModelScope.launch(
+        Dispatchers.IO
+    ) {
         updateState { copy(seasonalLoading = true) }
         mangaRepository.getList(
             MangaListRequest.Seasonal,
@@ -73,7 +76,9 @@ class DemoViewModel(
         }
     }
 
-    private fun getFollowedMangaUpdatesFeed(hardRefresh: Boolean) = viewModelScope.launch {
+    private fun getFollowedMangaUpdatesFeed(hardRefresh: Boolean) = viewModelScope.launch(
+        Dispatchers.IO
+    ) {
         updateState { copy(chapterFeedLoading = true) }
         sessionManager.session
             .onEach { if (it == null) updateState { copy(chapterFeedLoading = false) } }
@@ -120,7 +125,9 @@ class DemoViewModel(
             }
     }
 
-    private fun getOtherLists(hardRefresh: Boolean) = viewModelScope.launch {
+    private fun getOtherLists(hardRefresh: Boolean) = viewModelScope.launch(
+        Dispatchers.IO
+    ) {
         updateState { copy(
             popularLoading = true,
             recentLoading = true,
@@ -156,7 +163,9 @@ class DemoViewModel(
             }
     }
 
-    private fun getUserLists(hardRefresh: Boolean) = viewModelScope.launch {
+    private fun getUserLists(hardRefresh: Boolean) = viewModelScope.launch(
+        Dispatchers.IO
+    ) {
         updateState { copy(userListsLoading = true) }
         sessionManager.session
             .filterNotNull()

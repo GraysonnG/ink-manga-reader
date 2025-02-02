@@ -1,5 +1,7 @@
 package com.blanktheevil.inkmangareader.stubs
 
+import com.blanktheevil.inkmangareader.data.Either
+import com.blanktheevil.inkmangareader.data.success
 import com.blanktheevil.inkmangareader.download.DownloadManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,5 +26,9 @@ class DownloadManagerStub : DownloadManager {
 
     override suspend fun removeDownloadedChapter(chapterId: String) {
 
+    }
+
+    override suspend fun getChapterPages(chapterId: String): Either<List<String>> {
+        return success(emptyList())
     }
 }

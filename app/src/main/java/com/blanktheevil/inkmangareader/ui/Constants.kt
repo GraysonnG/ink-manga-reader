@@ -1,5 +1,6 @@
 package com.blanktheevil.inkmangareader.ui
 
+import android.view.Window
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -38,3 +39,5 @@ object Transitions {
 val LocalNavController = compositionLocalOf<NavHostController> {
     error("No NavController")
 }
+
+val LocalWindow = compositionLocalOf<Window> { error("No Window") }

@@ -6,11 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.TopAppBarDefaults
@@ -27,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import com.blanktheevil.inkmangareader.ui.Gradients
+import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
 import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,13 +39,12 @@ fun ImageHeader(
     headerArea: @Composable BoxScope.(scrollFraction: Float) -> Unit,
     content: @Composable (NestedScrollConnection) -> Unit
 ) {
-    val statusBarSize = with (LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         state = rememberTopAppBarState()
     )
 
-    val expandedHeight = initialHeight.plus(statusBarSize)
-    val collapsedHeight = minHeight.plus(statusBarSize)
+    val expandedHeight = initialHeight.plus(permanentStatusBarSize)
+    val collapsedHeight = minHeight.plus(permanentStatusBarSize)
     val expandedHeightPx: Float
     val collapsedHeightPx: Float
     val boxAlphaMax = 1f

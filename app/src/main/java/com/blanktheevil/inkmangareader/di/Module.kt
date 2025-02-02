@@ -20,6 +20,8 @@ import com.blanktheevil.inkmangareader.data.room.InkDatabase
 import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
 import com.blanktheevil.inkmangareader.download.DownloadManager
 import com.blanktheevil.inkmangareader.download.DownloadManagerImpl
+import com.blanktheevil.inkmangareader.reader.InkReaderManager
+import com.blanktheevil.inkmangareader.reader.ReaderManager
 import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.squareup.moshi.Moshi
@@ -81,24 +83,29 @@ val appModule = module {
             .create()
     }
 
+    // managers
     singleOf(::DownloadManagerImpl) { bind<DownloadManager>() }
-
     singleOf(::SessionManager) { createdAtStart() }
+    singleOf(::InkReaderManager) { bind<ReaderManager>() }
+
+    // daos
     single { get<InkDatabase>().mangaDao() }
     single { get<InkDatabase>().chapterDao() }
     single { get<InkDatabase>().listDao() }
     single { get<InkDatabase>().modelStateDao() }
     single { get<InkDatabase>().downloadDao() }
 
-
+    // repositories
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
     singleOf(::UserRepositoryImpl) { bind<UserRepository>() }
     singleOf(::MangaRepositoryImpl) { bind<MangaRepository>() }
     singleOf(::ChapterRepositoryImpl) { bind<ChapterRepository>() }
     singleOf(::UserListRepositoryImpl) { bind<UserListRepository>() }
 
+    // providers
     singleOf(::ModelStateProvider)
 
+    // viewmodels
     viewModelOf(::DemoViewModel)
     viewModelOf(::MangaDetailViewModel)
 }

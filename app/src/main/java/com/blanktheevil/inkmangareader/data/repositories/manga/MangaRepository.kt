@@ -5,6 +5,7 @@ import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.models.MangaList
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
+import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
 import kotlinx.coroutines.flow.StateFlow
 
 interface MangaRepository {
@@ -18,7 +19,7 @@ interface MangaRepository {
     suspend fun follow(mangaId: String): Either<Unit>
     suspend fun unfollow(mangaId: String): Either<Unit>
     suspend fun getFollowing(mangaId: String): Either<Unit>
-//    suspend fun getVolumes(): Either<Volumes>
+    suspend fun getAggregate(mangaId: String): Either<List<LinkedChapter>>
 }
 
 typealias MangaListEither = Either<MangaList>

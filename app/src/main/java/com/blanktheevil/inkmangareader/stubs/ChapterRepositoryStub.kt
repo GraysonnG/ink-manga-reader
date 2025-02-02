@@ -13,6 +13,9 @@ class ChapterRepositoryStub : ChapterRepository {
     override suspend fun get(chapterId: String, hardRefresh: Boolean): StateFlow<Either<Chapter>> =
         MutableStateFlow(success(StubData.chapter()))
 
+    override suspend fun getEager(chapterId: String): Either<Chapter> =
+        success(StubData.chapter())
+
     override suspend fun getList(
         request: ChapterListRequest,
         limit: Int,

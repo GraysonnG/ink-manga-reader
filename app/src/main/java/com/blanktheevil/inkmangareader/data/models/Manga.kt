@@ -6,6 +6,7 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class Manga(
     override val id: String,
+    override val type: String = Manga::class.java.name,
     val coverArt: String?,
     val title: String,
     val description: String,

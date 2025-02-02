@@ -63,6 +63,8 @@ import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.components.ImageHeader
 import com.blanktheevil.inkmangareader.ui.components.Volumes
 import com.blanktheevil.inkmangareader.ui.components.VolumesSkeleton
+import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
+import com.blanktheevil.inkmangareader.ui.statusBarSize
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.Params
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.State
@@ -148,7 +150,6 @@ private fun HeaderArea(
 ) = Column(
     modifier = Modifier.fillMaxSize()
 ) {
-    val statusBarSize = with (LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
     val buttonBackgroundColor = remember(scrollFraction) {
         Color.Black.copy(alpha = (1 - scrollFraction) * 0.55f)
     }
@@ -159,7 +160,7 @@ private fun HeaderArea(
     var menuOpen by remember {
         mutableStateOf(false)
     }
-    Spacer(modifier = Modifier.size(statusBarSize))
+    Spacer(modifier = Modifier.size(permanentStatusBarSize))
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
