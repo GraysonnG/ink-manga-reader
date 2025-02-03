@@ -54,7 +54,7 @@ class InkReaderManager(
             )
 
             if (_state.value.currentChapterPageUrls.size == 1) {
-                markChapterRead()
+                markChapterRead(true)
             }
 
             updateState { copy(
@@ -155,7 +155,7 @@ class InkReaderManager(
         val nextPage = _state.value.currentPage + 1
 
         if (nextPage == _state.value.currentChapterPageUrls.lastIndex) {
-            markChapterRead()
+            markChapterRead(true)
         }
 
         when {
@@ -211,15 +211,19 @@ class InkReaderManager(
         }
     }
 
-    override fun markChapterRead() {
-        val mangaId = _state.value.mangaId ?: return
-        val chapterId = _state.value.currentChapterId ?: return
+    override fun markChapterRead(
+        isRead: Boolean,
+        mangaId: String?,
+        chapterId: String?,
+    ) {
+        val currentMangaId = mangaId ?: _state.value.mangaId ?: return
+        val currentChapterId = chapterId ?: _state.value.currentChapterId ?: return
 
         readerScope.launch {
             chapterRepository.markAsRead(
-                mangaId = mangaId,
-                chapterId = chapterId,
-                isRead = true
+                mangaId = currentMangaId,
+                chapterId = currentChapterId,
+                isRead = isRead
             )
         }
     }

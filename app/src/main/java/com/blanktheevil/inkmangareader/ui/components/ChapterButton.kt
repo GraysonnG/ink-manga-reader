@@ -5,6 +5,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -36,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -58,6 +61,9 @@ fun ColumnScope.ChapterButton(chapter: Chapter) = Column {
     val downloadManager: DownloadManager = koinInject()
     val readerManager: ReaderManager = koinInject()
     var chapterDownloaded by remember { mutableStateOf(false) }
+    var isRead by remember(chapter.isRead) {
+        mutableStateOf(chapter.isRead ?: false)
+    }
 
     suspend fun refreshIsDownloaded() {
         delay(100)
@@ -71,10 +77,18 @@ fun ColumnScope.ChapterButton(chapter: Chapter) = Column {
     InternalButton(
         chapterId = chapter.id,
         title = chapter.title.medium,
-        isRead = chapter.isRead ?: false,
+        isRead = isRead,
         isDownloaded = chapterDownloaded,
         refreshIsDownloaded = ::refreshIsDownloaded,
-        downloadManager = downloadManager
+        downloadManager = downloadManager,
+        onReadIconClicked = {
+            readerManager.markChapterRead(
+                isRead = !isRead,
+                mangaId = chapter.relatedMangaId,
+                chapterId = chapter.id,
+            )
+            isRead = !isRead
+        }
     ) {
         readerManager.setChapter(chapter.id)
     }
@@ -92,6 +106,7 @@ private fun InternalButton(
     title: String,
     downloadManager: DownloadManager,
     refreshIsDownloaded: suspend () -> Unit,
+    onReadIconClicked: () -> Unit = { },
     onClick: () -> Unit = { },
 ) {
     val scope = rememberCoroutineScope()
@@ -104,7 +119,15 @@ private fun InternalButton(
         title = {
             InkIcon(
                 resId = if(isRead) R.drawable.round_check_circle_24 else R.drawable.outline_circle_24,
-                modifier = Modifier.padding(start = 12.dp),
+                modifier =
+                Modifier
+                    .clip(CircleShape)
+                    .clickable(
+                        role = Role.Button,
+                        onClick = onReadIconClicked,
+                    )
+                    .padding(12.dp)
+                ,
                 contentDescription = null,
             )
 

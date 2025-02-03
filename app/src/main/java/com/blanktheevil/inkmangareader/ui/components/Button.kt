@@ -31,22 +31,21 @@ private fun buttonColor(): Color = MaterialTheme.colorScheme.primaryContainer
 @Composable
 private fun onButtonColor(): Color = MaterialTheme.colorScheme.onPrimaryContainer
 
-private val ButtonModifier
-    @Composable get() = Modifier
-        .height(IntrinsicSize.Min)
-        .fillMaxWidth()
-        .clip(RoundedCornerShape(50))
-        .background(buttonColor())
-        .heightIn(min = 40.dp)
-
 @Composable
 fun SimpleInkButton(
     onClick: () -> Unit,
     title: @Composable RowScope.() -> Unit,
+    color: Color = buttonColor(),
     background: (@Composable BoxScope.() -> Unit)? = null,
     trailingIcon: (@Composable RowScope.() -> Unit)? = null,
 ) = CompositionLocalProvider(LocalContentColor provides onButtonColor()){
-    Box(modifier = ButtonModifier) {
+    Box(modifier = Modifier
+        .height(IntrinsicSize.Min)
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(50))
+        .background(color)
+        .heightIn(min = 40.dp)
+    ) {
         background?.invoke(this)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Row(

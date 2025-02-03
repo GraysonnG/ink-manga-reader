@@ -21,7 +21,11 @@ interface ReaderManager {
     fun nextChapter()
     fun prevChapter()
 
-    fun markChapterRead()
+    fun markChapterRead(
+        isRead: Boolean,
+        mangaId: String? = null,
+        chapterId: String? = null,
+    )
 }
 
 data class ReaderManagerState(

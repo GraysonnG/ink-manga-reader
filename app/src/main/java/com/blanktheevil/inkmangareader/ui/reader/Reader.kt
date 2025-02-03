@@ -299,7 +299,13 @@ private fun BoxScope.FullView(
                     pageUrls = readerState.currentChapterPageUrls,
                     onScreenClick = { uiVisible = !uiVisible },
                     nextButtonClicked = readerManager::nextChapter,
-                    onLastPageViewed = readerManager::markChapterRead,
+                    onLastPageViewed = {
+                        readerManager.markChapterRead(
+                            isRead = true,
+                            chapterId = readerState.currentChapterId,
+                            mangaId = readerState.mangaId,
+                        )
+                    },
                 )
             }
 
@@ -309,7 +315,13 @@ private fun BoxScope.FullView(
                     pageUrls = readerState.currentChapterPageUrls,
                     onScreenClick = { uiVisible = !uiVisible },
                     nextButtonClicked = readerManager::nextChapter,
-                    onLastPageViewed = readerManager::markChapterRead,
+                    onLastPageViewed = {
+                        readerManager.markChapterRead(
+                            isRead = true,
+                            chapterId = readerState.currentChapterId,
+                            mangaId = readerState.mangaId,
+                        )
+                    },
                 )
             }
         }
