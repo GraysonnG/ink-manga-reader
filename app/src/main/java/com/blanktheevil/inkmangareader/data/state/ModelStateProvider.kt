@@ -64,13 +64,15 @@ class ModelStateProvider(
         persist: (suspend (T) -> Unit)? = null,
         update: T.() -> T
     ) {
-        Log.d("Update", key)
         val activeState = getActiveState<T>(key = key)
         activeState.stateFlow.value.successOrNull()?.let {
             val newState = update(it)
             activeState.stateFlow.emit(success(newState))
             persist?.invoke(newState)
-            if (newState is BaseItem) { notifyItemListOfChange(newState) }
+            if (newState is BaseItem) {
+                Log.d("Update", "Notifying item lists...")
+                notifyItemListOfChange(newState)
+            }
         }
     }
 
