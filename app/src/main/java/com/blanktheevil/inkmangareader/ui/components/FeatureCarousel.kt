@@ -38,6 +38,7 @@ import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.Gradients
 import com.blanktheevil.inkmangareader.ui.InkIcon
+import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
 import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 
 @Composable
@@ -50,7 +51,7 @@ fun FeatureCarousel(
 
         Box(
             modifier = Modifier
-                .height(screenHeight.div(1.75f))
+                .height(screenHeight.div(2f).plus(permanentStatusBarSize))
         ) {
             if (mangaList.items.isEmpty()) return@Box
 

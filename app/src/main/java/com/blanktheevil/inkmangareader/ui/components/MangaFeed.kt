@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -78,7 +79,9 @@ private fun MangaItem(
         )
 ) {
     val coverImage = manga.coverArt.toAsyncPainterImage(crossfade = true)
-    val unreadChapters = chapters.filter { it.isRead == false }.size
+    val unreadChapters = remember(chapters) {
+        chapters.filter { it.isRead != true }.size
+    }
     Image(
         modifier = Modifier
             .fillMaxWidth()

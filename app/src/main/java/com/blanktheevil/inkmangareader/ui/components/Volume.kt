@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -85,6 +87,12 @@ fun Volume(title: String, chapters: List<Chapter>) = Column(
             }
         }
 }
+
+fun LazyListScope.volumeItems(volumes: Map<String, List<Chapter>>) =
+    items(volumes.entries.toList()) { (volume, chapters) ->
+        Volume("Vol. $volume", chapters)
+    }
+
 
 @Composable
 fun Volumes(chapters: ChapterList) = Column {

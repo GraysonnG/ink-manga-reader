@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,13 +19,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
@@ -47,7 +44,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,10 +57,9 @@ import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.components.ImageHeader
-import com.blanktheevil.inkmangareader.ui.components.Volumes
 import com.blanktheevil.inkmangareader.ui.components.VolumesSkeleton
+import com.blanktheevil.inkmangareader.ui.components.volumeItems
 import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
-import com.blanktheevil.inkmangareader.ui.statusBarSize
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.Params
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.State
@@ -85,7 +80,6 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MangaDetailLayout(
     manga: Manga,
@@ -95,6 +89,9 @@ private fun MangaDetailLayout(
     onMenuItemClicked: (Int) -> Unit = {},
 ) {
     val headerHeight = LocalConfiguration.current.screenHeightDp.dp.times(0.5f)
+    val volumes = remember(chapters) {
+        chapters.items.groupBy { it.volume ?: "No Volume" }
+    }
 
     ImageHeader(
         initialHeight = headerHeight,
@@ -129,13 +126,11 @@ private fun MangaDetailLayout(
                     maxLines = 99,
                 )
             }
-            
-            item {
-                if (chapters.items.isEmpty()) {
-                    VolumesSkeleton()
-                } else {
-                    Volumes(chapters = chapters)
-                }
+
+            if (chapters.items.isEmpty()) {
+                item { VolumesSkeleton() }
+            } else {
+                volumeItems(volumes)
             }
         }
     }
