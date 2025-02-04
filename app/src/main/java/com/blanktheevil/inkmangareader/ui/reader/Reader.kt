@@ -326,9 +326,11 @@ private fun BoxScope.FullView(
             }
         }
 
-        ProgressBar(
-            readerState = readerState
-        )
+        if (readerState.readerType == ReaderType.PAGE) {
+            ProgressBar(
+                readerState = readerState
+            )
+        }
 
         AnimatedVisibility(
             visible = uiVisible,
@@ -454,10 +456,11 @@ private fun BoxScope.ProgressBar(
             .plus(1f) / max(1f, readerState.currentChapterPageUrls.size.toFloat())
 
     val progressAnim by animateFloatAsState(targetValue = progress, label = "progress")
+    val bottomPadding by animateDpAsState(targetValue = navigationBarSize, label = "navSize")
 
     Row(
         modifier = Modifier
-            .padding(bottom = navigationBarSize)
+            .padding(bottom = bottomPadding)
             .align(Alignment.BottomStart)
             .fillMaxWidth()
             .height(3.dp),
@@ -480,7 +483,7 @@ private fun BoxScope.ProgressBar(
 
     AnimatedVisibility(
         modifier = Modifier
-            .padding(bottom = navigationBarSize)
+            .padding(bottom = bottomPadding)
             .align(Alignment.BottomStart),
         visible = readerState.readerType == ReaderType.PAGE
     ) {
