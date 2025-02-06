@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
+import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
+import com.blanktheevil.inkmangareader.reader.ReaderManager
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
@@ -64,18 +66,26 @@ import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.Params
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.State
 import dev.jeziellago.compose.markdowntext.MarkdownText
+import org.koin.compose.koinInject
 
 @Composable
 fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Params>(
     viewModelParams = Params(mangaId)
 ) {_, uiState, _ ->
     val nav = LocalNavController.current
+    val readerManager = koinInject<ReaderManager>()
     uiState.manga?.let { manga ->
         MangaDetailLayout(
             manga,
             uiState.chapterFeed,
+            firstChapter = uiState.firstChapter,
             onBackButtonClicked = { nav.popBackStack() },
-            onMenuItemClicked = {}
+            onMenuItemClicked = {},
+            onStartReadingClicked = {
+                uiState.firstChapter?.let {
+                    readerManager.setChapter(it.id)
+                }
+            }
         )
     }
 }
@@ -84,7 +94,9 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
 private fun MangaDetailLayout(
     manga: Manga,
     chapters: ChapterList,
+    firstChapter: LinkedChapter? = null,
     @DrawableRes headerPlaceholderImage: Int? = null,
+    onStartReadingClicked: () -> Unit = {},
     onBackButtonClicked: () -> Unit = {},
     onMenuItemClicked: (Int) -> Unit = {},
 ) {
@@ -100,8 +112,10 @@ private fun MangaDetailLayout(
         headerArea = {
             HeaderArea(
                 manga = manga,
+                firstChapter = firstChapter,
                 scrollFraction = it,
                 onBackButtonClicked = onBackButtonClicked,
+                onStartReadingClicked = onStartReadingClicked,
                 onMenuItemClicked = onMenuItemClicked,
             )
         },
@@ -139,7 +153,9 @@ private fun MangaDetailLayout(
 @Composable
 private fun HeaderArea(
     manga: Manga,
+    firstChapter: LinkedChapter?,
     scrollFraction: Float,
+    onStartReadingClicked: () -> Unit,
     onBackButtonClicked: () -> Unit,
     onMenuItemClicked: (Int) -> Unit,
 ) = Column(
@@ -204,7 +220,9 @@ private fun HeaderArea(
                     .times(2)
                     .coerceIn(0f, 1f)
             ),
-            manga = manga
+            onStartReadingClicked = onStartReadingClicked,
+            manga = manga,
+            firstChapter = firstChapter,
         )
     }
 }
@@ -213,7 +231,9 @@ private fun HeaderArea(
 @Composable
 private fun BoxScope.TitleDetailContent(
     modifier: Modifier = Modifier,
+    firstChapter: LinkedChapter?,
     manga: Manga,
+    onStartReadingClicked: () -> Unit,
 ) = Column(
     modifier = modifier
         .padding(8.dp)
@@ -243,6 +263,7 @@ private fun BoxScope.TitleDetailContent(
             }
         }
 
+        if (firstChapter == null) return@Row
         Box(
             modifier = Modifier
                 .weight(1f),
@@ -260,12 +281,14 @@ private fun BoxScope.TitleDetailContent(
                             interactionSource = remember { MutableInteractionSource() },
                             role = Role.Button,
                             indication = ripple(),
-                            onClick = {},
+                            onClick = onStartReadingClicked,
                         )
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
+                    val text = "Ch. ${firstChapter.chapter}"
+
                     Text(
-                        "Start Reading Ch. 1",
+                        "Start Reading $text",
                         modifier = Modifier.align(Alignment.CenterVertically),
                         style = MaterialTheme.typography.labelMedium,
                     )
