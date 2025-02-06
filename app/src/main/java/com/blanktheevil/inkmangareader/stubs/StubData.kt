@@ -57,6 +57,7 @@ object StubData {
             short = title
         ),
         isRead = isRead,
+        availableDate = 0L,
     )
 
     fun chapterList(

@@ -32,6 +32,7 @@ fun ChapterDto.toChapter(): Chapter {
         relatedMangaId = relatedMangaId,
         relatedScanlationGroup = relatedScanGroup?.toScanlationGroup(),
         relatedScanlationGroupId = relatedScanGroupId,
+        availableDate = this.attributes.readableAt?.time,
         isRead = null
     )
 }

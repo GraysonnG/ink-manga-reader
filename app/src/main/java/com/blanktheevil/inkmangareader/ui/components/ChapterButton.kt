@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -43,10 +44,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.ScanlationGroup
 import com.blanktheevil.inkmangareader.download.DownloadManager
+import com.blanktheevil.inkmangareader.helpers.isNew
 import com.blanktheevil.inkmangareader.reader.ReaderManager
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
@@ -57,12 +60,15 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
-fun ColumnScope.ChapterButton(chapter: Chapter) = Column {
+fun ColumnScope.ChapterButton(chapter: Chapter) = Box {
     val downloadManager: DownloadManager = koinInject()
     val readerManager: ReaderManager = koinInject()
     var chapterDownloaded by remember { mutableStateOf(false) }
     var isRead by remember(chapter.isRead) {
         mutableStateOf(chapter.isRead ?: false)
+    }
+    val isNew = remember(chapter.availableDate, chapter.isRead) {
+        chapter.isNew
     }
 
     suspend fun refreshIsDownloaded() {
@@ -74,28 +80,44 @@ fun ColumnScope.ChapterButton(chapter: Chapter) = Column {
         chapterDownloaded = downloadManager.isChapterDownloaded(chapter.id)
     }
 
-    InternalButton(
-        chapterId = chapter.id,
-        title = chapter.title.medium,
-        isRead = isRead,
-        isDownloaded = chapterDownloaded,
-        refreshIsDownloaded = ::refreshIsDownloaded,
-        downloadManager = downloadManager,
-        onReadIconClicked = {
-            readerManager.markChapterRead(
-                isRead = !isRead,
-                mangaId = chapter.relatedMangaId,
-                chapterId = chapter.id,
-            )
-            isRead = !isRead
-        }
-    ) {
-        readerManager.setChapter(chapter.id)
+    if (isNew) {
+        Badge(
+            modifier = Modifier
+                .zIndex(2f)
+                .offset(
+                    y = 6.dp.unaryMinus(),
+                    x = 6.dp.unaryMinus(),
+                ),
+            content = {
+                Text("New")
+            }
+        )
     }
 
-    chapter.relatedScanlationGroup.GroupLink(
-        chapterDownloaded = chapterDownloaded
-    )
+    Column {
+        InternalButton(
+            chapterId = chapter.id,
+            title = chapter.title.medium,
+            isRead = isRead,
+            isDownloaded = chapterDownloaded,
+            refreshIsDownloaded = ::refreshIsDownloaded,
+            downloadManager = downloadManager,
+            onReadIconClicked = {
+                readerManager.markChapterRead(
+                    isRead = !isRead,
+                    mangaId = chapter.relatedMangaId,
+                    chapterId = chapter.id,
+                )
+                isRead = !isRead
+            }
+        ) {
+            readerManager.setChapter(chapter.id)
+        }
+
+        chapter.relatedScanlationGroup.GroupLink(
+            chapterDownloaded = chapterDownloaded
+        )
+    }
 }
 
 @Composable

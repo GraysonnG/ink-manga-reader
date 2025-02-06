@@ -16,6 +16,7 @@ data class Chapter(
     val relatedScanlationGroupId: String?,
     val relatedScanlationGroup: ScanlationGroup?,
     val isRead: Boolean?,
+    val availableDate: Long?,
 ) : BaseItem
 
 typealias ChapterList = DataList<Chapter>
