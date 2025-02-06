@@ -14,6 +14,8 @@ import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepositoryImpl
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepositoryImpl
+import com.blanktheevil.inkmangareader.data.repositories.tags.TagsRepository
+import com.blanktheevil.inkmangareader.data.repositories.tags.TagsRepositoryImpl
 import com.blanktheevil.inkmangareader.data.repositories.user.UserRepository
 import com.blanktheevil.inkmangareader.data.repositories.user.UserRepositoryImpl
 import com.blanktheevil.inkmangareader.data.room.InkDatabase
@@ -22,6 +24,7 @@ import com.blanktheevil.inkmangareader.download.DownloadManager
 import com.blanktheevil.inkmangareader.download.DownloadManagerImpl
 import com.blanktheevil.inkmangareader.reader.InkReaderManager
 import com.blanktheevil.inkmangareader.reader.ReaderManager
+import com.blanktheevil.inkmangareader.ui.search.SearchViewModel
 import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.squareup.moshi.Moshi
@@ -101,6 +104,7 @@ val appModule = module {
     singleOf(::MangaRepositoryImpl) { bind<MangaRepository>() }
     singleOf(::ChapterRepositoryImpl) { bind<ChapterRepository>() }
     singleOf(::UserListRepositoryImpl) { bind<UserListRepository>() }
+    singleOf(::TagsRepositoryImpl) { bind<TagsRepository>() }
 
     // providers
     singleOf(::ModelStateProvider)
@@ -108,4 +112,5 @@ val appModule = module {
     // viewmodels
     viewModelOf(::DemoViewModel)
     viewModelOf(::MangaDetailViewModel)
+    viewModelOf(::SearchViewModel)
 }

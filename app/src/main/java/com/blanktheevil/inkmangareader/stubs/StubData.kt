@@ -6,6 +6,7 @@ import com.blanktheevil.inkmangareader.data.models.ChapterTitle
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.models.MangaList
 import com.blanktheevil.inkmangareader.data.models.ScanlationGroup
+import com.blanktheevil.inkmangareader.data.models.Tag
 import java.util.UUID
 
 object StubData {
@@ -78,4 +79,22 @@ object StubData {
         name = name,
         website = "https://google.com"
     )
+
+    fun tag(
+        name: String = "Tag",
+        group: String = "Group",
+    ) = Tag(
+        id = UUID.randomUUID().toString(),
+        name = name,
+        group = group,
+    )
+
+    fun tagList(
+        length: Int
+    ): List<Tag> = List(length) {
+        tag(
+            name = "Tag $it",
+            group = "Group ${it.div(16)}"
+        )
+    }
 }

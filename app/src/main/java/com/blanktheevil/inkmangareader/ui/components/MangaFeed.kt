@@ -41,7 +41,8 @@ fun MangaFeed(
     modifier: Modifier = Modifier,
     onClick: (mangaId: String) -> Unit,
 ) = Column {
-    RowLink(title = "My Updates")
+    val list = remember(feed) { feed.entries.toList() }
+    RowLink(title = "Your Updates")
     Spacer(modifier = Modifier.size(8.dp))
     LazyRow(
         modifier = modifier,
@@ -50,7 +51,7 @@ fun MangaFeed(
     ) {
         item { Spacer(modifier = Modifier) }
         if (feed.isNotEmpty()) {
-            items(feed.entries.toList()) { (manga, list) ->
+            items(list) { (manga, list) ->
                 MangaItem(manga = manga, chapters = list, onClick = onClick)
             }
         } else {

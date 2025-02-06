@@ -171,19 +171,21 @@ class DemoViewModel(
             .filterNotNull()
             .collect {
                 userListRepository.getCurrentLists().onSuccess { userLists ->
-                    val data = userLists.entries.map {
-                        mangaRepository.getList(
-                            MangaListRequest.Generic(it.value.items.take(15), it.value.title),
-                            hardRefresh = hardRefresh,
-                        )
-                            .onEach { either ->
-                                either.onError {
-                                    updateState { copy(userListsLoading = false) }
+                    val data = userLists.entries
+                        .take(3)
+                        .map {
+                            mangaRepository.getList(
+                                MangaListRequest.Generic(it.value.items.take(15), it.value.title),
+                                hardRefresh = hardRefresh,
+                            )
+                                .onEach { either ->
+                                    either.onError {
+                                        updateState { copy(userListsLoading = false) }
+                                    }
                                 }
-                            }
-                            .filterIsInstance<Either.Success<MangaList>>()
-                            .map { e -> e.data }
-                    }
+                                .filterIsInstance<Either.Success<MangaList>>()
+                                .map { e -> e.data }
+                        }
                     combine(flows = data) { it.toList() }
                         .collect { updateState { copy(
                             userLists = it,
