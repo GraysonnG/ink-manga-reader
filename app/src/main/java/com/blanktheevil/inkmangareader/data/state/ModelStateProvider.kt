@@ -76,6 +76,37 @@ class ModelStateProvider(
         }
     }
 
+    @Suppress("unchecked_cast")
+    suspend fun <T : BaseItem> updateLists(
+        itemId: String,
+        persist: (suspend (T) -> Unit)? = null,
+        update: T.() -> T,
+    ) {
+        states.values
+            .filterIsListOfBaseItem() // actually filter the list
+            .filterIsInstance<ActiveState<DataList<BaseItem>>>() // trick the compiler
+            .associate { it.stateFlow to it.stateFlow.value.successOrNull() }
+            .forEach { (flow, data) ->
+                if (data == null) return@forEach
+                val itemIndex = data.items.indexOfFirst { it.id == itemId }
+
+                if (itemIndex >= 0) {
+                    val item = data.items
+                        .filter { it.id == itemId }
+                        .firstNotNullOfOrNull { it as? T }
+
+                    val newItem = item?.update()
+                    data.items.toMutableList().apply {
+                        newItem?.let { updatedItem ->
+                            set(itemIndex, updatedItem)
+                            persist?.invoke(updatedItem)
+                            flow.emit(success(data.copy(items = this)))
+                        }
+                    }
+                }
+            }
+    }
+
     private suspend inline fun <reified T : BaseItem> notifyItemListOfChange(itemChanged: T) =
         states.values
             .filterIsListOfBaseItem(itemChanged.type)
@@ -95,15 +126,17 @@ class ModelStateProvider(
             }
 
     private fun MutableCollection<ActiveState<*>>.filterIsListOfBaseItem(
-        baseItemType: String,
+        baseItemType: String? = null,
     ) = filter {
         it.stateFlow.value.successOrNull()?.let { t ->
             if (t::class.java != DataList::class.java) {
                 return@filter false
             } else {
-                return@filter (t as DataList<*>).items.firstOrNull()?.let { t2 ->
-                    t2::class.java.name == baseItemType
-                } ?: false
+                return@filter if (baseItemType == null) true else {
+                    (t as DataList<*>).items.firstOrNull()?.let { t2 ->
+                        t2::class.java.name == baseItemType
+                    } ?: false
+                }
             }
         } ?: false
     }

@@ -20,9 +20,7 @@ import com.blanktheevil.inkmangareader.data.repositories.mappers.toChapterList
 import com.blanktheevil.inkmangareader.data.room.dao.ChapterDao
 import com.blanktheevil.inkmangareader.data.room.dao.ListDao
 import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 class ChapterRepositoryImpl(
     private val mangaDexApi: MangaDexApi,
@@ -90,10 +88,12 @@ class ChapterRepositoryImpl(
                 )
             )
 
-            modelStateProvider.update<Chapter>(
-                key = makeKey(CHAPTER_PREFIX, chapterId),
-                persist = { chapterDao.insertModel(it) },
-            ) { copy(isRead = isRead) }
+            modelStateProvider.updateLists<Chapter>(
+                itemId = chapterId,
+                persist = { chapterDao.insertModel(it) }
+            ) {
+                copy(isRead = isRead)
+            }
         }
     }
 
@@ -133,24 +133,20 @@ class ChapterRepositoryImpl(
         val mangaIds = chapterList.items.mapNotNull { it.relatedMangaId }.distinct()
 
         if (auth != null) {
-            coroutineScope {
-                launch {
-                    val ids = mangaDexApi.getReadChapterIdsByMangaIds(
-                        authorization = auth,
-                        ids = mangaIds,
-                    ).data
+            val ids = mangaDexApi.getReadChapterIdsByMangaIds(
+                authorization = auth,
+                ids = mangaIds,
+            ).data
 
-                    for (id in ids) {
-                        val key = makeKey(CHAPTER_PREFIX, id)
-                        modelStateProvider.update<Chapter>(key) {
-                            copy(isRead = true)
-                        }
-                    }
-
-                    chapterList = chapterList.map {
-                        it.copy(isRead = it.id in ids)
-                    }
+            for (id in ids) {
+                val key = makeKey(CHAPTER_PREFIX, id)
+                modelStateProvider.update<Chapter>(key) {
+                    copy(isRead = true)
                 }
+            }
+
+            chapterList = chapterList.map {
+                it.copy(isRead = it.id in ids)
             }
         }
 
