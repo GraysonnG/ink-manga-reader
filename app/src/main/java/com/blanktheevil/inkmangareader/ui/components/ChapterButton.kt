@@ -1,5 +1,9 @@
 package com.blanktheevil.inkmangareader.ui.components
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.animateFloatAsState
@@ -61,6 +65,10 @@ import org.koin.compose.koinInject
 
 @Composable
 fun ColumnScope.ChapterButton(chapter: Chapter) = Box {
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+        onResult = {}
+    )
     val downloadManager: DownloadManager = koinInject()
     val readerManager: ReaderManager = koinInject()
     var chapterDownloaded by remember { mutableStateOf(false) }
@@ -98,20 +106,39 @@ fun ColumnScope.ChapterButton(chapter: Chapter) = Box {
         InternalButton(
             chapterId = chapter.id,
             title = chapter.title.medium,
-            isRead = isRead,
             isDownloaded = chapterDownloaded,
+            isExternal = chapter.externalUrl != null,
             refreshIsDownloaded = ::refreshIsDownloaded,
             downloadManager = downloadManager,
-            onReadIconClicked = {
-                readerManager.markChapterRead(
-                    isRead = !isRead,
-                    mangaId = chapter.relatedMangaId,
-                    chapterId = chapter.id,
+            leadingIcon = {
+                InkIcon(
+                    resId = if(isRead) R.drawable.round_check_circle_24 else R.drawable.outline_circle_24,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable(
+                            role = Role.Button,
+                            onClick = {
+                                readerManager.markChapterRead(
+                                    isRead = !isRead,
+                                    mangaId = chapter.relatedMangaId,
+                                    chapterId = chapter.id,
+                                )
+                                isRead = !isRead
+                            },
+                        )
+                        .padding(12.dp),
+                    contentDescription = null,
                 )
-                isRead = !isRead
             }
         ) {
-            readerManager.setChapter(chapter.id)
+            if (chapter.externalUrl == null) {
+                readerManager.setChapter(chapter.id)
+            } else {
+                Intent(Intent.ACTION_VIEW).apply {
+                    data = Uri.parse(chapter.externalUrl)
+                    launcher.launch(this)
+                }
+            }
         }
 
         chapter.relatedScanlationGroup.GroupLink(
@@ -123,12 +150,12 @@ fun ColumnScope.ChapterButton(chapter: Chapter) = Box {
 @Composable
 private fun InternalButton(
     chapterId: String,
-    isRead: Boolean,
     isDownloaded: Boolean,
+    isExternal: Boolean,
     title: String,
     downloadManager: DownloadManager,
     refreshIsDownloaded: suspend () -> Unit,
-    onReadIconClicked: () -> Unit = { },
+    leadingIcon: @Composable () -> Unit,
     onClick: () -> Unit = { },
 ) {
     val scope = rememberCoroutineScope()
@@ -139,19 +166,7 @@ private fun InternalButton(
     SimpleInkButton(
         onClick = onClick,
         title = {
-            InkIcon(
-                resId = if(isRead) R.drawable.round_check_circle_24 else R.drawable.outline_circle_24,
-                modifier =
-                Modifier
-                    .clip(CircleShape)
-                    .clickable(
-                        role = Role.Button,
-                        onClick = onReadIconClicked,
-                    )
-                    .padding(12.dp)
-                ,
-                contentDescription = null,
-            )
+            leadingIcon()
 
             Text(
                 title,
@@ -176,6 +191,16 @@ private fun InternalButton(
             )
         },
         trailingIcon = {
+
+            if (isExternal) {
+                InkIcon(
+                    resId = R.drawable.round_open_in_new_24,
+                    modifier = Modifier.padding(12.dp),
+                    contentDescription = null,
+                )
+                return@SimpleInkButton
+            }
+
             Box {
                 ChapterMenu(
                     modifier = Modifier.offset(y = (-4).dp),
@@ -375,6 +400,11 @@ private fun Preview() = DefaultPreview {
         ChapterButton(
             chapter = StubData.chapter(
                 isRead = true
+            )
+        )
+        ChapterButton(
+            chapter = StubData.chapter(
+                externalUrl = "some url"
             )
         )
         ChapterButton(
