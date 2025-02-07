@@ -46,59 +46,59 @@ fun FeatureCarousel(
     mangaList: MangaList,
     onItemClicked: (mangaId: String) -> Unit = {}
 ) {
-        val configuration = LocalConfiguration.current
-        val screenHeight = configuration.screenHeightDp.dp
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
 
-        Box(
-            modifier = Modifier
-                .height(screenHeight.div(2f).plus(permanentStatusBarSize))
-        ) {
-            if (mangaList.items.isEmpty()) return@Box
+    Box(
+        modifier = Modifier
+            .height(screenHeight.div(2f).plus(permanentStatusBarSize))
+    ) {
+        if (mangaList.items.isEmpty()) return@Box
 
-            val pageCount = remember(mangaList) {
-                mangaList.items.size * 10000
-            }
-
-            val pagerState = rememberPagerState(
-                initialPage = pageCount / 2,
-                pageCount = { pageCount }
-            )
-
-            HorizontalPager(
-                modifier = Modifier.fillMaxSize(),
-                state = pagerState,
-                beyondViewportPageCount = 1,
-            ) {
-                val index = remember {
-                    it % mangaList.items.size
-                }
-                FeatureItem(
-                    manga = mangaList.items[index],
-                    onItemClicked = onItemClicked
-                )
-            }
-
-            Row(
-                Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(4.dp)
-            ) {
-                val style = MaterialTheme.typography.labelMedium
-                val color = Color.White
-                val index = pagerState.currentPage % mangaList.items.size
-
-                Text(
-                    text = "${index + 1}",
-                    style = style,
-                    color = color,
-                )
-                Text(
-                    text = "/${pagerState.pageCount / 10000}",
-                    style = style,
-                    color = color.copy(0.5f),
-                )
-            }
+        val pageCount = remember(mangaList) {
+            mangaList.items.size * 10000
         }
+
+        val pagerState = rememberPagerState(
+            initialPage = pageCount / 2,
+            pageCount = { pageCount }
+        )
+
+        HorizontalPager(
+            modifier = Modifier.fillMaxSize(),
+            state = pagerState,
+            beyondViewportPageCount = 1,
+        ) {
+            val index = remember {
+                it % mangaList.items.size
+            }
+            FeatureItem(
+                manga = mangaList.items[index],
+                onItemClicked = onItemClicked
+            )
+        }
+
+        Row(
+            Modifier
+                .align(Alignment.BottomEnd)
+                .padding(4.dp)
+        ) {
+            val style = MaterialTheme.typography.labelMedium
+            val color = Color.White
+            val index = pagerState.currentPage % mangaList.items.size
+
+            Text(
+                text = "${index + 1}",
+                style = style,
+                color = color,
+            )
+            Text(
+                text = "/${pagerState.pageCount / 10000}",
+                style = style,
+                color = color.copy(0.5f),
+            )
+        }
+    }
 }
 
 @Composable
