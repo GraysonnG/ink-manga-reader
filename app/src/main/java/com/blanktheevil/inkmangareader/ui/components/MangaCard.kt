@@ -1,5 +1,6 @@
 package com.blanktheevil.inkmangareader.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,13 +22,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 
 @Composable
-fun MangaCard(manga: Manga, onClick: (() -> Unit)? = null) {
+fun MangaCard(
+    manga: Manga,
+    @DrawableRes placeholderRes: Int? = null,
+    onClick: (() -> Unit)? = null,
+) {
     Column (
         Modifier.clip(RoundedCornerShape(8.dp))
             .width(IntrinsicSize.Min)
@@ -41,10 +47,12 @@ fun MangaCard(manga: Manga, onClick: (() -> Unit)? = null) {
             )
     ) {
         val coverImage = manga.coverArt.toAsyncPainterImage(
+            placeholder = placeholderRes,
             crossfade = true
         )
         Image(
             modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
                 .height(240.dp)
                 .aspectRatio(9 / 13f)
                 .fillMaxWidth(),
@@ -70,5 +78,8 @@ fun MangaCardSkeleton() {
 @Composable
 @PreviewLightDark
 private fun Preview() = DefaultPreview {
-    MangaCard(manga = StubData.manga())
+    MangaCard(
+        manga = StubData.manga(),
+        placeholderRes = R.drawable.manga_placeholder
+    )
 }
