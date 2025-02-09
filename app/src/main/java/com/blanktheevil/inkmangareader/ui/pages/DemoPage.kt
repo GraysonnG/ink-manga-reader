@@ -46,12 +46,13 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
     val scope = rememberCoroutineScope()
     val nav = LocalNavController.current
     val columnState = rememberLazyListState()
-    val scrollOffset by remember { derivedStateOf { columnState.firstVisibleItemScrollOffset } }
+    val scrollOffset by remember { derivedStateOf { columnState.firstVisibleItemScrollOffset + columnState.firstVisibleItemIndex * 1000 } }
     var searchSheetOpen by remember { mutableStateOf(false) }
 
     HomeHeader(
         scrollOffset = scrollOffset,
-        onSearchClicked = { searchSheetOpen = true }
+        authenticated = authenticated,
+        onSearchClicked = { searchSheetOpen = true },
     )
 
     LazyColumn(
@@ -75,7 +76,10 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
             item {
                 Button(onClick = {
                     scope.launch {
-                        sessionManager.login(BuildConfig.MANGADEX_USERNAME, BuildConfig.MANGADEX_PASSWORD)
+                        sessionManager.login(
+                            BuildConfig.MANGADEX_USERNAME,
+                            BuildConfig.MANGADEX_PASSWORD,
+                        )
                     }
                 }) {
                     Text("Login")
