@@ -40,6 +40,7 @@ import com.blanktheevil.inkmangareader.ui.statusBarSize
 import kotlinx.coroutines.delay
 
 private const val BREAKPOINT = 500
+private const val ANIMATION_DURATION = 500
 
 @Composable
 fun HomeHeader(
@@ -61,12 +62,12 @@ fun HomeHeader(
     val buttonColor by animateColorAsState(
         targetValue = if (scrollOffset <= BREAKPOINT) Color.Black.copy(alpha = 0.6f) else Color.Transparent,
         label = "buttonColor",
-        animationSpec = tween(1000)
+        animationSpec = tween(ANIMATION_DURATION)
     )
     val headerColor by animateColorAsState(
         targetValue = if (scrollOffset <= BREAKPOINT) Color.Transparent else Color.Black.copy(alpha = 0.8f),
         label = "headerColor",
-        animationSpec = tween(1000)
+        animationSpec = tween(ANIMATION_DURATION)
     )
 
     val iconButtonColors = IconButtonDefaults.iconButtonColors(
