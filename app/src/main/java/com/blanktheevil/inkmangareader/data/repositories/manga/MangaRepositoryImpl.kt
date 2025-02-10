@@ -1,11 +1,13 @@
 package com.blanktheevil.inkmangareader.data.repositories.manga
 
 import android.util.Log
+import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.Sorting
 import com.blanktheevil.inkmangareader.data.api.GithubApi
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
+import com.blanktheevil.inkmangareader.data.dto.RelationshipType
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.getListFromRoom
@@ -127,6 +129,24 @@ class MangaRepositoryImpl(
                 githubApi.getSeasonalData().let {
                     mangaDexApi.getManga(ids = it.mangaIds, limit = it.mangaIds.size, offset = 0)
                         .toMangaList(title = it.name)
+                }
+            }
+
+            is MangaListRequest.UserList -> makeAuthenticatedCall(sessionManager) { auth ->
+                val res = mangaDexApi.getListById(
+                    authorization = auth,
+                    listId = listId
+                )
+                val ids = res.data.relationships
+                    ?.getAllOfType(RelationshipType.MANGA)
+                    ?.map { it.id }
+                    ?: emptyList()
+
+                if (ids.isNotEmpty()) {
+                    mangaDexApi.getManga(ids = ids.take(15), limit = limit, offset = offset)
+                        .toMangaList(title = res.data.attributes.name)
+                } else {
+                    DataList(items = emptyList(), title = res.data.attributes.name)
                 }
             }
 

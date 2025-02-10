@@ -16,6 +16,7 @@ import com.blanktheevil.inkmangareader.data.dto.responses.GetMangaCoversResponse
 import com.blanktheevil.inkmangareader.data.dto.responses.GetMangaListResponse
 import com.blanktheevil.inkmangareader.data.dto.responses.GetMangaResponse
 import com.blanktheevil.inkmangareader.data.dto.responses.GetTagsResponse
+import com.blanktheevil.inkmangareader.data.dto.responses.GetUserListResponse
 import com.blanktheevil.inkmangareader.data.dto.responses.GetUserListsResponse
 import com.blanktheevil.inkmangareader.data.dto.responses.GetUserResponse
 import com.blanktheevil.inkmangareader.data.dto.responses.Refresh
@@ -241,4 +242,10 @@ interface MangaDexApi {
         @Path("id") id: String,
         @Path("listId") listId: String,
     )
+
+    @GET("list/{id}")
+    suspend fun getListById(
+        @Header("Authorization") authorization: String,
+        @Path("id") listId: String,
+    ): GetUserListResponse
 }

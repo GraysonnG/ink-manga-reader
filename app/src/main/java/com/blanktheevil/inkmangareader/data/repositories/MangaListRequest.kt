@@ -29,4 +29,7 @@ sealed class MangaListRequest(
         val title: String?,
         val year: String?,
     ) : MangaListRequest(type = "Search")
+    data class UserList(
+        val listId: String,
+    ) : MangaListRequest(type = "UserList-$listId")
 }
