@@ -8,13 +8,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-abstract class BaseViewModel<T : BaseViewModelState, R>(
-    state: T,
+abstract class BaseViewModel<VMState : BaseViewModelState, VMParams>(
+    state: VMState,
 ) : ViewModel() {
     protected val _uiState = MutableStateFlow(state)
     val uiState = _uiState.asStateFlow()
 
-    abstract fun initViewModel(hardRefresh: Boolean, params: R? = null): Job
+    abstract fun initViewModel(hardRefresh: Boolean, params: VMParams? = null): Job
 
     protected suspend fun doAsyncJobs(vararg jobs: suspend () -> Any) = coroutineScope {
         val deferred = jobs.map { this.async { it() } }
@@ -22,8 +22,7 @@ abstract class BaseViewModel<T : BaseViewModelState, R>(
         Unit
     }
 
-
-    fun updateState(update: T.() -> T) {
+    fun updateState(update: VMState.() -> VMState) {
         val updatedValue = update(_uiState.value)
         _uiState.value = updatedValue
     }
