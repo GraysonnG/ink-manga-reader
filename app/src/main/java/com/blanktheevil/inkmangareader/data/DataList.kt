@@ -9,13 +9,16 @@ data class DataList<T>(
     val offset: Int = 0,
     val limit: Int = 0,
     val total: Int = -1,
+    val extras: Map<String, String>? = null,
 )
 
 fun <T> emptyDataList(): DataList<T> = DataList(emptyList())
+
 inline fun <T, R> DataList<T>.map(transform: (T) -> R) = DataList(
     title = title,
     items = items.map(transform),
     offset = offset,
     limit = limit,
     total = total,
+    extras = extras,
 )

@@ -13,6 +13,13 @@ class UserListRepositoryImpl(
     private val mangaDexApi: MangaDexApi,
     private val sessionManager: SessionManager,
 ) : UserListRepository {
+    companion object {
+        /**
+         * # "listId"
+         */
+        const val LIST_ID_EXTRA_KEY = "listId"
+    }
+
     override suspend fun getLists(userId: String): Either<Map<String, DataList<String>>> =
         makeCall {
             mangaDexApi.getUserLists(id = userId).toMangaLists()
@@ -34,14 +41,16 @@ class UserListRepositoryImpl(
         }
 
     private fun GetUserListsResponse.toMangaLists(): Map<String, DataList<String>> =
-        data.associate {
-            val ids = it.relationships?.getAllOfType(RelationshipType.MANGA)?.map { rel -> rel.id } ?: emptyList()
-            it.id to DataList(
-                title = it.attributes.name,
+        data.associate { userList ->
+            val ids = userList.relationships?.getAllOfType(RelationshipType.MANGA)?.map { rel -> rel.id } ?: emptyList()
+
+            userList.id to DataList(
+                title = userList.attributes.name,
                 items = ids,
                 offset = 0,
                 limit = ids.size,
                 total = ids.size,
+                extras = mapOf(LIST_ID_EXTRA_KEY to userList.id)
             )
         }
 
