@@ -1,5 +1,10 @@
 package com.blanktheevil.inkmangareader.data
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+
 sealed class Either<T> {
     class Success<T>(val data: T) : Either<T>()
     class Error<T>(val error: Throwable) : Either<T>()
@@ -29,3 +34,18 @@ fun <T> Either<out T?>.nullDataToNull(): Either<T> = if (this is Either.Success 
 } else {
     Either.Null()
 }
+
+fun <T> Flow<Either<T>>.onEitherError(
+    onError: (Throwable) -> Unit = {}
+): Flow<Either<T>> = this.onEach {
+    it.onError { error -> onError(error) }
+}
+
+fun <T> Flow<Either<T>>.filterEitherSuccess(
+    onError: (Throwable) -> Unit = {}
+): Flow<T> = this
+        .onEach {
+            it.onError { error -> onError(error) }
+        }
+        .filterIsInstance<Either.Success<T>>()
+        .map { it.data }

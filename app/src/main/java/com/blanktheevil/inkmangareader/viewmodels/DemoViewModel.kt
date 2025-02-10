@@ -3,20 +3,27 @@ package com.blanktheevil.inkmangareader.viewmodels
 import androidx.lifecycle.viewModelScope
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
+import com.blanktheevil.inkmangareader.data.error
+import com.blanktheevil.inkmangareader.data.filterEitherSuccess
+import com.blanktheevil.inkmangareader.data.isInvalid
 import com.blanktheevil.inkmangareader.data.isValid
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.models.MangaList
+import com.blanktheevil.inkmangareader.data.onEitherError
 import com.blanktheevil.inkmangareader.data.repositories.ChapterListRequest
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
 import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -29,6 +36,7 @@ class DemoViewModel(
 ) : BaseViewModel<DemoViewModel.DemoState, DemoViewModel.DemoParams>(DemoState()) {
 
     override fun initViewModel(hardRefresh: Boolean, params: DemoParams?) = viewModelScope.launch {
+        if (!_uiState.value.loading && !hardRefresh) return@launch
         updateState {
             if (hardRefresh) {
                 DemoState()
@@ -76,51 +84,45 @@ class DemoViewModel(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun getFollowedMangaUpdatesFeed(hardRefresh: Boolean) = viewModelScope.launch(
         Dispatchers.IO
     ) {
         updateState { copy(chapterFeedLoading = true) }
         sessionManager.session
-            .onEach { if (it == null) updateState { copy(chapterFeedLoading = false) } }
+            .onEach { if (it.isInvalid()) updateState { copy(chapterFeedLoading = false) } }
             .filterNotNull()
-            .collect {
-                if (it.isValid()) {
-                    chapterRepository.getList(
-                        ChapterListRequest.Follows,
-                        limit = 60,
-                        offset = 0,
-                        hardRefresh = hardRefresh,
-                    )
-                        .onEach { either ->
-                            either.onError {
-                                updateState { copy(chapterFeedLoading = false) }
-                            }
-                        }
-                        .filterIsInstance<Either.Success<ChapterList>>()
-                        .collect { list ->
-                            val ids = list.data.items.mapNotNull { ch -> ch.relatedMangaId }.distinct()
+            .filter { it.isValid() }
+            .flatMapMerge { chapterRepository.getList(ChapterListRequest.Follows, limit = 60, hardRefresh = hardRefresh) }
+            .onEitherError { updateState { copy(chapterFeedLoading = false) } }
+            .filterEitherSuccess()
+            .flatMapMerge {
+                val ids = it.items.mapNotNull { ch -> ch.relatedMangaId }.distinct()
+                if (ids.isEmpty()) return@flatMapMerge flow<Pair<ChapterList, Either.Error<MangaList>>> {
+                    emit(Pair(it, error(Exception("No Ids"))))
+                }
+                combine(
+                    flow { emit(it) },
+                    mangaRepository.getList(MangaListRequest.Generic(ids), hardRefresh = hardRefresh),
+                    ::Pair
+                )
+            }
+            .collect { (list, either) ->
+                either.onSuccess { mangaList ->
+                    val data = mangaList.items.map { manga ->
+                        Pair(manga, list.items.filter { ch -> ch.relatedMangaId == manga.id })
+                    }.sortedBy { (_, chapters) ->
+                        chapters.all { ch -> ch.isRead == true }
+                    }.toMap()
 
-                            mangaRepository.getList(MangaListRequest.Generic(ids), hardRefresh = hardRefresh).collect { either ->
-                                either.onSuccess { mangaList ->
-                                    val data = mangaList.items.map { manga ->
-                                        Pair(manga, list.data.items.filter { ch -> ch.relatedMangaId == manga.id })
-                                    }.sortedBy { (_, chapters) ->
-                                        chapters.all { ch -> ch.isRead == true }
-                                    }.toMap()
+                    updateState {
+                        copy(
+                            chapterFeed = data,
+                            chapterFeedLoading = false
+                        )
+                    }
+                }.onError {
 
-                                    updateState {
-                                        copy(
-                                            chapterFeed = data,
-                                            chapterFeedLoading = false
-                                        )
-                                    }
-                                }
-
-                                either.onError {
-                                    updateState { copy(chapterFeedLoading = false) }
-                                }
-                            }
-                        }
                 }
             }
     }
@@ -163,35 +165,36 @@ class DemoViewModel(
             }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun getUserLists(hardRefresh: Boolean) = viewModelScope.launch(
         Dispatchers.IO
     ) {
         updateState { copy(userListsLoading = true) }
         sessionManager.session
             .filterNotNull()
-            .collect {
-                userListRepository.getCurrentLists().onSuccess { userLists ->
-                    val data = userLists.entries
+            .filter { it.isValid() }
+            .map { userListRepository.getCurrentLists().successOrNull() }
+            .filterNotNull()
+            .flatMapMerge { userLists ->
+                combine(
+                    userLists.entries
                         .take(3)
-                        .map {
+                        .map { entry -> entry.key }
+                        .map { listId ->
                             mangaRepository.getList(
-                                MangaListRequest.Generic(it.value.items.take(15), it.value.title),
-                                hardRefresh = hardRefresh,
+                                MangaListRequest.UserList(listId = listId),
+                                hardRefresh = hardRefresh
                             )
-                                .onEach { either ->
-                                    either.onError {
-                                        updateState { copy(userListsLoading = false) }
-                                    }
-                                }
-                                .filterIsInstance<Either.Success<MangaList>>()
-                                .map { e -> e.data }
                         }
-                    combine(flows = data) { it.toList() }
-                        .collect { updateState { copy(
-                            userLists = it,
-                            userListsLoading = false,
-                        ) } }
+                ) { comb ->
+                    comb.mapNotNull { list -> list.successOrNull() }
                 }
+            }
+            .collect { lists ->
+                updateState { copy(
+                    userLists = lists,
+                    userListsLoading = false
+                ) }
             }
     }
 
