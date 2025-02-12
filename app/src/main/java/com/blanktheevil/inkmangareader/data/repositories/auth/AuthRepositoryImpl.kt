@@ -10,7 +10,7 @@ import com.blanktheevil.inkmangareader.data.repositories.makeCall
 class AuthRepositoryImpl(
     private val mangaDexApi: MangaDexApi,
 ): AuthRepository {
-    override suspend fun login(username: String, password: String): Either<Session?> = makeCall {
+    override suspend fun login(username: String, password: String): Either<Session> = makeCall {
         mangaDexApi.authLogin(AuthData(username = username, password = password)).let {
             Session(
                 token = it.token.session,
@@ -20,7 +20,7 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun refresh(refreshToken: String): Either<Session?> = makeCall {
+    override suspend fun refresh(refreshToken: String): Either<Session> = makeCall {
         mangaDexApi.authRefresh(Refresh(refreshToken)).let {
             Session(
                 token = it.token.session,

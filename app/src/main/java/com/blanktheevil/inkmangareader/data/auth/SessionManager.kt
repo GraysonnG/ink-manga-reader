@@ -38,7 +38,7 @@ class SessionManager(
     }
 
     suspend fun login(username: String, password: String) =
-        authRepository.login(username, password).successOrNull()?.let {
+        authRepository.login(username, password).onSuccess {
             _session.value = it
             localSession = it
         }
