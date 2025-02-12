@@ -1,4 +1,4 @@
-package com.blanktheevil.inkmangareader.ui.search
+package com.blanktheevil.inkmangareader.ui.sheets.search
 
 import androidx.lifecycle.viewModelScope
 import com.blanktheevil.inkmangareader.data.models.Tag

@@ -1,4 +1,4 @@
-package com.blanktheevil.inkmangareader.ui.search
+package com.blanktheevil.inkmangareader.ui.sheets.search
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,4 @@
-package com.blanktheevil.inkmangareader.ui.search
+package com.blanktheevil.inkmangareader.ui.sheets.search
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,11 +10,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,7 +19,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -32,6 +28,7 @@ import com.blanktheevil.inkmangareader.data.models.Tag
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
+import com.blanktheevil.inkmangareader.ui.components.TextInputField
 import com.blanktheevil.inkmangareader.ui.statusBarSize
 import org.koin.androidx.compose.koinViewModel
 
@@ -84,27 +81,12 @@ private fun SearchSheetContent(
             .padding(top = statusBarSize),
         horizontalAlignment = Alignment.End,
     ) {
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
+        TextInputField(
             value = "",
             onValueChange = {},
             trailingIcon = {
-                InkIcon(
-                    modifier = Modifier,
-                    resId = R.drawable.round_search_24
-                )
-            },
-            placeholder = { Text("Search...") },
-            singleLine = true,
-            shape = RectangleShape,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                disabledBorderColor = Color.Transparent,
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceDim,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceDim,
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceDim,
-            )
+                InkIcon(resId = R.drawable.round_search_24)
+            }
         )
 
         Column(
