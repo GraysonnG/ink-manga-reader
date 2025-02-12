@@ -49,6 +49,7 @@ fun HomeHeader(
     authenticatedInitialState: Boolean = false,
     onSearchClicked: () -> Unit = {},
     onSettingsClicked: () -> Unit = {},
+    onAccountClicked: () -> Unit = {},
 ) {
     var auth by remember {
         mutableStateOf(authenticatedInitialState)
@@ -98,8 +99,9 @@ fun HomeHeader(
                         .padding(4.dp)
                         .clip(RoundedCornerShape(50))
                         .clickable(
-                            role = Role.Button
-                        ) { }
+                            role = Role.Button,
+                            onClick = onAccountClicked,
+                        )
                         .background(buttonColor)
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,

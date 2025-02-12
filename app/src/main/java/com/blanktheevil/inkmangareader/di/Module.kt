@@ -24,7 +24,8 @@ import com.blanktheevil.inkmangareader.download.DownloadManager
 import com.blanktheevil.inkmangareader.download.DownloadManagerImpl
 import com.blanktheevil.inkmangareader.reader.InkReaderManager
 import com.blanktheevil.inkmangareader.reader.ReaderManager
-import com.blanktheevil.inkmangareader.ui.search.SearchViewModel
+import com.blanktheevil.inkmangareader.ui.sheets.login.LoginViewModel
+import com.blanktheevil.inkmangareader.ui.sheets.search.SearchViewModel
 import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.squareup.moshi.Moshi
@@ -113,4 +114,5 @@ val appModule = module {
     viewModelOf(::DemoViewModel)
     viewModelOf(::MangaDetailViewModel)
     viewModelOf(::SearchViewModel)
+    viewModelOf(::LoginViewModel)
 }

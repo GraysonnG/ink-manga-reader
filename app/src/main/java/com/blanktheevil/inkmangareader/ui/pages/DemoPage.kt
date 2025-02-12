@@ -35,7 +35,8 @@ import com.blanktheevil.inkmangareader.ui.components.FeatureCarousel
 import com.blanktheevil.inkmangareader.ui.components.HomeHeader
 import com.blanktheevil.inkmangareader.ui.components.MangaFeed
 import com.blanktheevil.inkmangareader.ui.components.MangaShelf
-import com.blanktheevil.inkmangareader.ui.search.SearchSheet
+import com.blanktheevil.inkmangareader.ui.sheets.login.LoginSheet
+import com.blanktheevil.inkmangareader.ui.sheets.search.SearchSheet
 import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -48,11 +49,13 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
     val columnState = rememberLazyListState()
     val scrollOffset by remember { derivedStateOf { columnState.firstVisibleItemScrollOffset + columnState.firstVisibleItemIndex * 1000 } }
     var searchSheetOpen by remember { mutableStateOf(false) }
+    var loginSheetOpen by remember { mutableStateOf(false) }
 
     HomeHeader(
         scrollOffset = scrollOffset,
         authenticated = authenticated,
         onSearchClicked = { searchSheetOpen = true },
+        onAccountClicked = { loginSheetOpen = true }
     )
 
     LazyColumn(
@@ -141,6 +144,12 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
     if (searchSheetOpen) {
         SearchSheet {
             searchSheetOpen = false
+        }
+    }
+
+    if (loginSheetOpen) {
+        LoginSheet {
+            loginSheetOpen = false
         }
     }
 }
