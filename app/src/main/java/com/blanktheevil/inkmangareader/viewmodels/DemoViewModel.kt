@@ -22,9 +22,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
@@ -36,7 +38,6 @@ class DemoViewModel(
 ) : BaseViewModel<DemoViewModel.DemoState, DemoViewModel.DemoParams>(DemoState()) {
 
     override fun initViewModel(hardRefresh: Boolean, params: DemoParams?) = viewModelScope.launch {
-        if (!_uiState.value.loading && !hardRefresh) return@launch
         updateState {
             if (hardRefresh) {
                 DemoState()
@@ -93,12 +94,12 @@ class DemoViewModel(
             .onEach { if (it.isInvalid()) updateState { copy(chapterFeedLoading = false) } }
             .filterNotNull()
             .filter { it.isValid() }
-            .flatMapMerge { chapterRepository.getList(ChapterListRequest.Follows, limit = 60, hardRefresh = hardRefresh) }
+            .flatMapLatest { chapterRepository.getList(ChapterListRequest.Follows, limit = 60, hardRefresh = hardRefresh) }
             .onEitherError { updateState { copy(chapterFeedLoading = false) } }
             .filterEitherSuccess()
-            .flatMapMerge {
+            .flatMapLatest {
                 val ids = it.items.mapNotNull { ch -> ch.relatedMangaId }.distinct()
-                if (ids.isEmpty()) return@flatMapMerge flow<Pair<ChapterList, Either.Error<MangaList>>> {
+                if (ids.isEmpty()) return@flatMapLatest flow<Pair<ChapterList, Either.Error<MangaList>>> {
                     emit(Pair(it, error(Exception("No Ids"))))
                 }
                 combine(
