@@ -55,7 +55,13 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
         scrollOffset = scrollOffset,
         authenticated = authenticated,
         onSearchClicked = { searchSheetOpen = true },
-        onAccountClicked = { loginSheetOpen = true }
+        onAccountClicked = {
+            if (authenticated) {
+                // open the user menu
+            } else {
+                loginSheetOpen = true
+            }
+        }
     )
 
     LazyColumn(
