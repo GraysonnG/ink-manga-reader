@@ -32,6 +32,14 @@ object Transitions {
     }
 
     val slideOut: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
+        slideOutHorizontally { -it } + fadeOut()
+    }
+
+    val slideInRev: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
+        slideInHorizontally { -it } + fadeIn()
+    }
+
+    val slideOutRev: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
         slideOutHorizontally { it } + fadeOut()
     }
 }
