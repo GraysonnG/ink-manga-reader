@@ -247,5 +247,6 @@ interface MangaDexApi {
     suspend fun getListById(
         @Header("Authorization") authorization: String,
         @Path("id") listId: String,
+        @Query("includes[]") includes: List<String> = listOf("user"),
     ): GetUserListResponse
 }

@@ -5,6 +5,7 @@ import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.dto.RelationshipType
+import com.blanktheevil.inkmangareader.data.dto.objects.UserDto
 import com.blanktheevil.inkmangareader.data.dto.responses.GetUserListsResponse
 import com.blanktheevil.inkmangareader.data.repositories.makeAuthenticatedCall
 import com.blanktheevil.inkmangareader.data.repositories.makeCall
@@ -18,6 +19,7 @@ class UserListRepositoryImpl(
          * # "listId"
          */
         const val LIST_ID_EXTRA_KEY = "listId"
+        const val LIST_OWNER_NAME_EXTRA_KEY = "username"
     }
 
     override suspend fun getLists(userId: String): Either<Map<String, DataList<String>>> =
@@ -43,6 +45,7 @@ class UserListRepositoryImpl(
     private fun GetUserListsResponse.toMangaLists(): Map<String, DataList<String>> =
         data.associate { userList ->
             val ids = userList.relationships?.getAllOfType(RelationshipType.MANGA)?.map { rel -> rel.id } ?: emptyList()
+            val user = userList.relationships?.getFirstOfType<UserDto>()
 
             userList.id to DataList(
                 title = userList.attributes.name,
@@ -50,7 +53,10 @@ class UserListRepositoryImpl(
                 offset = 0,
                 limit = ids.size,
                 total = ids.size,
-                extras = mapOf(LIST_ID_EXTRA_KEY to userList.id)
+                extras = mapOf(
+                    LIST_ID_EXTRA_KEY to userList.id,
+                    LIST_OWNER_NAME_EXTRA_KEY to (user?.attributes?.username ?: "Unknown"),
+                )
             )
         }
 

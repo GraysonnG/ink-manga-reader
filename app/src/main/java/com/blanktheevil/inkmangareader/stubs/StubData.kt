@@ -23,14 +23,16 @@ object StubData {
 
     fun mangaList(
         title: String? = "The Stub Manga List",
-        length: Int
+        length: Int,
+        extras: Map<String, String>? = null,
     ): MangaList = MangaList(
         title = title,
         items = List(size = length) {
             manga(
                 title = "Stub Manga $it"
             )
-        }
+        },
+        extras = extras,
     )
 
     fun chapter(

@@ -8,6 +8,7 @@ import com.blanktheevil.inkmangareader.data.api.GithubApi
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.dto.RelationshipType
+import com.blanktheevil.inkmangareader.data.dto.objects.UserDto
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.getListFromRoom
@@ -142,11 +143,17 @@ class MangaRepositoryImpl(
                     ?.map { it.id }
                     ?: emptyList()
 
+                val user = res.data.relationships
+                    ?.getFirstOfType<UserDto>()
+
                 if (ids.isNotEmpty()) {
                     mangaDexApi.getManga(ids = ids.take(15), limit = limit, offset = offset)
                         .toMangaList(
                             title = res.data.attributes.name,
-                            extras = mapOf("listId" to listId)
+                            extras = mapOf(
+                                "listId" to listId,
+                                "username" to (user?.attributes?.username ?: ""),
+                            )
                         )
                 } else {
                     DataList(items = emptyList(), title = res.data.attributes.name)

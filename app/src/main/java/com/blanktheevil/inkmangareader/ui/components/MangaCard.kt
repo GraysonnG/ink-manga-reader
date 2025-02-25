@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -31,11 +30,13 @@ import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 @Composable
 fun MangaCard(
     manga: Manga,
+    modifier: Modifier = Modifier,
+    imageModifier: Modifier = Modifier,
     @DrawableRes placeholderRes: Int? = null,
     onClick: (() -> Unit)? = null,
 ) {
     Column (
-        Modifier.clip(RoundedCornerShape(8.dp))
+        modifier.clip(RoundedCornerShape(8.dp))
             .width(IntrinsicSize.Min)
             .clickable(
                 enabled = onClick != null,
@@ -51,9 +52,8 @@ fun MangaCard(
             crossfade = true
         )
         Image(
-            modifier = Modifier
+            modifier = imageModifier
                 .clip(RoundedCornerShape(8.dp))
-                .height(240.dp)
                 .aspectRatio(9 / 13f)
                 .fillMaxWidth(),
             painter = coverImage,
