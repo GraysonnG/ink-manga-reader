@@ -28,19 +28,19 @@ object Gradients {
 
 object Transitions {
     val slideIn: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
-        slideInHorizontally { it } + fadeIn()
+        slideInHorizontally { it }
     }
 
     val slideOut: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
-        slideOutHorizontally { -it } + fadeOut()
+        slideOutHorizontally { -it }
     }
 
     val slideInRev: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
-        slideInHorizontally { -it } + fadeIn()
+        slideInHorizontally { -it }
     }
 
     val slideOutRev: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
-        slideOutHorizontally { it } + fadeOut()
+        slideOutHorizontally { it }
     }
 }
 
