@@ -85,6 +85,8 @@ private fun NavGraphBuilder.simpleComposable(
         arguments = arguments,
         enterTransition = Transitions.slideIn,
         exitTransition = Transitions.slideOut,
+        popEnterTransition = Transitions.slideInRev,
+        popExitTransition = Transitions.slideOutRev,
         content = content,
     )
 }
