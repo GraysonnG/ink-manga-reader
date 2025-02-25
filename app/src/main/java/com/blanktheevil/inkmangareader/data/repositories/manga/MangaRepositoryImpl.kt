@@ -144,7 +144,10 @@ class MangaRepositoryImpl(
 
                 if (ids.isNotEmpty()) {
                     mangaDexApi.getManga(ids = ids.take(15), limit = limit, offset = offset)
-                        .toMangaList(title = res.data.attributes.name)
+                        .toMangaList(
+                            title = res.data.attributes.name,
+                            extras = mapOf("listId" to listId)
+                        )
                 } else {
                     DataList(items = emptyList(), title = res.data.attributes.name)
                 }

@@ -30,6 +30,7 @@ import com.blanktheevil.inkmangareader.BuildConfig
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.emptyDataList
 import com.blanktheevil.inkmangareader.navigation.navigateToMangaDetail
+import com.blanktheevil.inkmangareader.navigation.navigateToMangaList
 import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.components.FeatureCarousel
 import com.blanktheevil.inkmangareader.ui.components.HomeHeader
@@ -38,6 +39,7 @@ import com.blanktheevil.inkmangareader.ui.components.MangaShelf
 import com.blanktheevil.inkmangareader.ui.sheets.login.LoginSheet
 import com.blanktheevil.inkmangareader.ui.sheets.search.SearchSheet
 import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
+import com.blanktheevil.inkmangareader.viewmodels.MangaListType
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -96,11 +98,32 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
             }
         }
 
-        items(listOfNotNull(uiState.popularList, uiState.recentList)) {
-            MangaShelf(mangaList = it) { mangaId ->
-                nav.navigateToMangaDetail(mangaId = mangaId)
+        uiState.popularList?.let {
+            item {
+                MangaShelf(
+                    mangaList = it,
+                    onRowLinkClicked = {
+                        nav.navigateToMangaList(MangaListType.POPULAR)
+                    }
+                ) { mangaId ->
+                    nav.navigateToMangaDetail(mangaId = mangaId)
+                }
+                Spacer(Modifier.size(16.dp))
             }
-            Spacer(modifier = Modifier.size(16.dp))
+        }
+
+        uiState.recentList?.let {
+            item {
+                MangaShelf(
+                    mangaList = it,
+                    onRowLinkClicked = {
+                        nav.navigateToMangaList(MangaListType.RECENT)
+                    }
+                ) { mangaId ->
+                    nav.navigateToMangaDetail(mangaId = mangaId)
+                }
+                Spacer(Modifier.size(16.dp))
+            }
         }
 
         if (uiState.userLists.isNotEmpty()) {
@@ -140,7 +163,15 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
         }
 
         items(uiState.userLists) {
-            MangaShelf(mangaList = it) { mangaId ->
+            MangaShelf(
+                mangaList = it,
+                onRowLinkClicked = {
+                    val listId = it.extras?.get("listId")
+                    if (listId != null) {
+                        nav.navigateToMangaList(listId)
+                    }
+                }
+            ) { mangaId ->
                 nav.navigateToMangaDetail(mangaId = mangaId)
             }
             Spacer(modifier = Modifier.size(16.dp))

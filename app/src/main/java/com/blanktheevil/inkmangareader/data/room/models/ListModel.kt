@@ -15,6 +15,7 @@ data class ListModel(
     val offset: Int,
     val total: Int,
     val title: String?,
+    val extras: Map<String, String>?,
 )
 
 fun DataList<out BaseItem>.toModel(
@@ -27,6 +28,7 @@ fun DataList<out BaseItem>.toModel(
         offset = offset,
         total = total,
         title = title,
+        extras = extras,
     )
 
 fun DataList<out BaseItem>.createRoomKey(): String =

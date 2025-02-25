@@ -74,5 +74,6 @@ suspend fun <T : BaseItem, R : BaseDao<out BaseModel<T>, T>> getListFromRoom(
         limit = list.limit,
         offset = list.offset,
         total = list.total,
+        extras = list.extras,
     )
 }

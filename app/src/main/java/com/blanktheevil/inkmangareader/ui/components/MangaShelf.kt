@@ -16,9 +16,13 @@ import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 
 @Composable
-fun MangaShelf(mangaList: MangaList, onItemClicked: (mangaId: String) -> Unit = {}) = Column {
+fun MangaShelf(
+    mangaList: MangaList,
+    onRowLinkClicked: () -> Unit = {},
+    onItemClicked: (mangaId: String) -> Unit = {}
+) = Column {
     mangaList.title?.let { title ->
-        RowLink(title = title)
+        RowLink(title = title, onClick = onRowLinkClicked)
         Spacer(modifier = Modifier.size(8.dp))
     }
     LazyRow(

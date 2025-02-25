@@ -81,4 +81,22 @@ class Converters {
     ): List<String> {
         return value.split(", ")
     }
+
+    @TypeConverter
+    fun simpleMapToJson(
+        value: Map<String, String>,
+    ): String {
+        return moshi
+            .adapter(Map::class.java)
+            .toJson(value)
+    }
+
+    @TypeConverter
+    fun simpleMapFromJson(
+        string: String,
+    ): Map<String, String> {
+        return moshi
+            .adapter<Map<String, String>>(Map::class.java)
+            .fromJson(string) ?: emptyMap()
+    }
 }

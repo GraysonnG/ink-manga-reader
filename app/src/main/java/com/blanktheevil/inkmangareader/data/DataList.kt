@@ -22,3 +22,14 @@ inline fun <T, R> DataList<T>.map(transform: (T) -> R) = DataList(
     total = total,
     extras = extras,
 )
+
+operator fun <T> DataList<T>.plus(other: DataList<T>): DataList<T> {
+    return DataList(
+        items = this.items + other.items,
+        title = this.title,
+        offset = this.offset,
+        limit = this.limit,
+        total = this.total + other.total,
+        extras = this.extras?.plus(other.extras ?: emptyMap()),
+    )
+}

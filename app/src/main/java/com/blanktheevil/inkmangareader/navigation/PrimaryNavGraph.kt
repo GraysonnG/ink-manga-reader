@@ -14,6 +14,7 @@ import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.Transitions
 import com.blanktheevil.inkmangareader.ui.pages.DemoPage
 import com.blanktheevil.inkmangareader.ui.pages.MangaDetailPage
+import com.blanktheevil.inkmangareader.ui.pages.MangaListPage
 
 @Composable
 fun PrimaryNavGraph(
@@ -39,12 +40,23 @@ fun PrimaryNavGraph(
             val mangaId = it.arguments?.getString("mangaId") ?: return@simpleComposable
             MangaDetailPage(mangaId = mangaId)
         }
+
+        simpleComposable(
+            route = InkDestination.MangaList.declareArguments("typeOrId"),
+            arguments = listOf(
+                navArgument("typeOrId") { nullable = false }
+            )
+        ) {
+            val typeOrId = it.arguments?.getString("typeOrId") ?: return@simpleComposable
+            MangaListPage(typeOrId = typeOrId)
+        }
     }
 }
 
 sealed class InkDestination(val route: String) {
     data object Home : InkDestination("home")
     data object MangaDetail : InkDestination("manga")
+    data object MangaList : InkDestination("mangalist")
 
     fun withArguments(
         vararg arguments: Pair<String, String>,
@@ -101,6 +113,16 @@ fun NavController.navigateToMangaDetail(mangaId: String) {
     navigate(
         route = InkDestination.MangaDetail.withArguments(
             "mangaId" to mangaId
+        )
+    )
+}
+
+fun NavController.navigateToMangaList(
+    typeOrId: String
+) {
+    navigate(
+        route = InkDestination.MangaList.withArguments(
+            "typeOrId" to typeOrId,
         )
     )
 }

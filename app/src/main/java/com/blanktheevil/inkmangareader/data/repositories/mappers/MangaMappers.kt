@@ -15,12 +15,16 @@ fun MangaDto.toManga(): Manga = Manga(
     tags = this.tags
 )
 
-fun GetMangaListResponse.toMangaList(title: String? = null): MangaList = DataList(
+fun GetMangaListResponse.toMangaList(
+    title: String? = null,
+    extras: Map<String, String>? = null,
+): MangaList = DataList(
     items = data.map(MangaDto::toManga),
     title = title,
     limit = limit,
     offset = offset,
-    total = total
+    total = total,
+    extras = extras,
 )
 
 fun List<MangaDto>.toMangaList(): MangaList = DataList(

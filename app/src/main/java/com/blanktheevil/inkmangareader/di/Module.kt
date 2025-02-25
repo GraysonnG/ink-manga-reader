@@ -28,6 +28,7 @@ import com.blanktheevil.inkmangareader.ui.sheets.login.LoginViewModel
 import com.blanktheevil.inkmangareader.ui.sheets.search.SearchViewModel
 import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
+import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import okhttp3.OkHttpClient
@@ -113,6 +114,7 @@ val appModule = module {
     // viewmodels
     viewModelOf(::DemoViewModel)
     viewModelOf(::MangaDetailViewModel)
+    viewModelOf(::MangaListViewModel)
     viewModelOf(::SearchViewModel)
     viewModelOf(::LoginViewModel)
 }
