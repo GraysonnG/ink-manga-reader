@@ -19,7 +19,9 @@ class MangaDetailViewModel(
 ) : BaseViewModel<MangaDetailViewModel.State, MangaDetailViewModel.Params>(
     State()
 ) {
-    override fun initViewModel(hardRefresh: Boolean, params: Params?): Job = viewModelScope.launch {
+    override fun initViewModel(hardRefresh: Boolean, params: Params?): Job = viewModelScope.launch(
+        Dispatchers.IO
+    ) {
         updateState {
             if (hardRefresh) {
                 State()
