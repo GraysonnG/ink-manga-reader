@@ -1,6 +1,5 @@
 package com.blanktheevil.inkmangareader.ui.pages
 
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
