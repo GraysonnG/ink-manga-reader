@@ -1,5 +1,6 @@
 package com.blanktheevil.inkmangareader.ui.components
 
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -19,6 +20,7 @@ fun TextInputField(
     shape: Shape = RectangleShape,
     placeholder: String = "",
     trailingIcon: (@Composable () -> Unit)? = null,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
 ) = TextField(
     modifier = modifier,
@@ -29,6 +31,7 @@ fun TextInputField(
     singleLine = true,
     shape = shape,
     visualTransformation = visualTransformation,
+    keyboardActions = keyboardActions,
     colors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = Color.Transparent,
         unfocusedBorderColor = Color.Transparent,
