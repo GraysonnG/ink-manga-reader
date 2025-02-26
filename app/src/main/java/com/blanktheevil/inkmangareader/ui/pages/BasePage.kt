@@ -5,7 +5,9 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.isValid
 import com.blanktheevil.inkmangareader.viewmodels.BaseViewModel
@@ -21,11 +23,16 @@ inline fun <reified VM: BaseViewModel<UIState, Params>, UIState: BaseViewModelSt
 ) {
     val sessionManager = koinInject<SessionManager>()
     val session by sessionManager.session.collectAsState()
+    val isSessionValid by remember { derivedStateOf { session.isValid() } }
     val viewModel = koinViewModel<VM>()
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.initViewModel(false, viewModelParams)
+    }
+
+    LaunchedEffect(isSessionValid) {
+        if (!isSessionValid) sessionManager.refresh()
     }
 
     PullToRefreshBox(
@@ -34,7 +41,7 @@ inline fun <reified VM: BaseViewModel<UIState, Params>, UIState: BaseViewModelSt
             viewModel.initViewModel(true, viewModelParams)
         }
     ) {
-        BasePageScopeInstance.content(viewModel, state, session.isValid())
+        BasePageScopeInstance.content(viewModel, state, isSessionValid)
     }
 }
 
