@@ -22,7 +22,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,8 +41,12 @@ import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.Gradients
 import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
+import com.blanktheevil.inkmangareader.ui.theme.springSlow
 import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 
+@OptIn(FlowPreview::class)
 @Composable
 fun FeatureCarousel(
     mangaList: MangaList,
@@ -63,6 +69,17 @@ fun FeatureCarousel(
             initialPage = pageCount / 2,
             pageCount = { pageCount }
         )
+
+        LaunchedEffect(Unit) {
+            snapshotFlow { pagerState.currentPage }
+                .debounce(7000) // delay until next automatic scrolling
+                .collect { page ->
+                    pagerState.animateScrollToPage(
+                        page + 1,
+                        animationSpec = springSlow()
+                    )
+                }
+        }
 
         HorizontalPager(
             modifier = Modifier.fillMaxSize(),
