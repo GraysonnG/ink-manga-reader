@@ -4,7 +4,9 @@ import com.blanktheevil.inkmangareader.data.ContentFilter
 import com.blanktheevil.inkmangareader.data.ContentRatings
 import com.blanktheevil.inkmangareader.data.Sorting
 import com.blanktheevil.inkmangareader.data.Tags
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class SearchParams(
     val limit: Int = 5,
     val offset: Int = 0,

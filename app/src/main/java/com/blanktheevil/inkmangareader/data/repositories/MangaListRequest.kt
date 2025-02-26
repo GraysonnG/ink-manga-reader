@@ -16,18 +16,7 @@ sealed class MangaListRequest(
     data object Seasonal : MangaListRequest(type = "Seasonal")
     data class Follows(val userId: String) : MangaListRequest(type = "Follows-$userId")
     data class Search(
-        val artists: List<String>?,
-        val authors: List<String>?,
-        val contentRatings: ContentRatings,
-        val excludedTags: List<String>?,
-        val excludedTagsMode: Tags.Mode?,
-        val includedTags: List<String>?,
-        val includedTagsMode: Tags.Mode?,
-        val order: Pair<String, String>?,
-        val publicationDemographic: List<String>?,
-        val status: List<String>?,
-        val title: String?,
-        val year: String?,
+        val params: SearchParams,
     ) : MangaListRequest(type = "Search")
     data class UserList(
         val listId: String,

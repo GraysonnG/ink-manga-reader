@@ -161,22 +161,24 @@ class MangaRepositoryImpl(
             }
 
             is MangaListRequest.Search -> makeCall {
-                mangaDexApi.getMangaSearch(
-                    artists = artists,
-                    authors = authors,
-                    contentRating = contentRatings,
-                    excludedTags = excludedTags,
-                    excludedTagsMode = excludedTagsMode,
-                    includedTags = includedTags,
-                    includedTagsMode = includedTagsMode,
-                    limit = limit,
-                    offset = offset,
-                    order = order.toOrder(),
-                    publicationDemographic = publicationDemographic,
-                    status = status,
-                    title = title,
-                    year = year,
-                ).toMangaList()
+                params.let {
+                    mangaDexApi.getMangaSearch(
+                        artists = it.artists,
+                        authors = it.authors,
+                        contentRating = it.contentRating,
+                        excludedTags = it.excludedTags,
+                        excludedTagsMode = it.excludedTagsMode,
+                        includedTags = it.includedTags,
+                        includedTagsMode = it.includedTagsMode,
+                        limit = limit,
+                        offset = offset,
+                        order = it.order.toOrder(),
+                        publicationDemographic = it.publicationDemographic,
+                        status = it.status,
+                        title = it.search,
+                        year = it.year,
+                    ).toMangaList()
+                }
             }
 
             else -> throw Exception("no request of this type available")
