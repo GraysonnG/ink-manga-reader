@@ -94,7 +94,7 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
                 manga,
                 uiState.chapterFeed,
                 firstChapter = uiState.firstChapter,
-                onBackButtonClicked = { nav.popBackStack() },
+                onBackButtonClicked = { nav.navigateUp() },
                 onMenuItemClicked = {},
                 onStartReadingClicked = {
                     uiState.firstChapter?.let {

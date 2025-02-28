@@ -69,7 +69,7 @@ fun MangaListPage(typeOrId: String) = BasePage<MangaListViewModel, State, Params
         uiState = uiState,
         onEditClicked = {},
         onBackButtonClicked = {
-            nav.popBackStack()
+            nav.navigateUp()
         },
         onMangaCardClicked = {
             nav.navigateToMangaDetail(it)
