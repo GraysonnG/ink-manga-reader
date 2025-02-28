@@ -4,7 +4,6 @@ import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.error
-import com.blanktheevil.inkmangareader.data.isExpired
 import com.blanktheevil.inkmangareader.data.isInvalid
 import com.blanktheevil.inkmangareader.data.models.BaseItem
 import com.blanktheevil.inkmangareader.data.room.dao.BaseDao
@@ -44,9 +43,14 @@ suspend fun <T> makeOptionallyAuthenticatedCall(
     sessionManager: SessionManager,
     callback: suspend (auth: String?) -> T?
 ) = makeCall {
-    val session = sessionManager.session.value.let {
-        if (it == null || it.isExpired()) null else it
+    if (sessionManager.session.value.isInvalid()) {
+        sessionManager.refresh()
     }
+
+    val session = sessionManager.session.value.let {
+        if (it.isInvalid()) null else it
+    }
+
     callback(session?.token?.let { token ->"Bearer $token" })
 }
 
