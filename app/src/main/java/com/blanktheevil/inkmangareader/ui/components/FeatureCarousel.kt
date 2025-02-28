@@ -46,17 +46,22 @@ import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 
+private const val AUTO_SCROLL_TIME: Long = 7000
+
 @OptIn(FlowPreview::class)
 @Composable
 fun FeatureCarousel(
     mangaList: MangaList,
-    onItemClicked: (mangaId: String) -> Unit = {}
+    modifier: Modifier = Modifier,
+    contentModifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onItemClicked: (mangaId: String) -> Unit = {},
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .height(screenHeight.div(2f).plus(permanentStatusBarSize))
     ) {
         if (mangaList.items.isEmpty()) return@Box
@@ -72,7 +77,7 @@ fun FeatureCarousel(
 
         LaunchedEffect(Unit) {
             snapshotFlow { pagerState.currentPage }
-                .debounce(7000) // delay until next automatic scrolling
+                .debounce(AUTO_SCROLL_TIME) // delay until next automatic scrolling
                 .collect { page ->
                     pagerState.animateScrollToPage(
                         page + 1,
@@ -85,11 +90,13 @@ fun FeatureCarousel(
             modifier = Modifier.fillMaxSize(),
             state = pagerState,
             beyondViewportPageCount = 1,
+            userScrollEnabled = enabled
         ) {
             val index = remember {
                 it % mangaList.items.size
             }
             FeatureItem(
+                modifier = contentModifier,
                 manga = mangaList.items[index],
                 onItemClicked = onItemClicked
             )
@@ -121,6 +128,7 @@ fun FeatureCarousel(
 @Composable
 private inline fun FeatureItem(
     manga: Manga,
+    modifier: Modifier = Modifier,
     crossinline onItemClicked: (mangaId: String) -> Unit,
 ) {
     val coverImage = manga.coverArt
@@ -140,18 +148,18 @@ private inline fun FeatureItem(
                     .fillMaxSize(),
                 contentDescription = "",
                 contentScale = ContentScale.Crop,
-                alignment = Alignment.TopCenter,
+                alignment = Alignment.Center,
             )
 
             Box(
-                modifier = Modifier
+                modifier = modifier
                     .heightIn(min = 10.dp)
                     .fillMaxSize()
                     .background(Gradients.transparentToBlack)
             )
 
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .padding(8.dp),

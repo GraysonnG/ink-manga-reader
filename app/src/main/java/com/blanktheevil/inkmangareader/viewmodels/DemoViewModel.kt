@@ -94,7 +94,7 @@ class DemoViewModel(
             .onEach { if (it.isInvalid()) updateState { copy(chapterFeedLoading = false) } }
             .filterNotNull()
             .filter { it.isValid() }
-            .flatMapLatest { chapterRepository.getList(ChapterListRequest.Follows, limit = 60, hardRefresh = hardRefresh) }
+            .flatMapLatest { chapterRepository.getList(ChapterListRequest.Follows, limit = 30, hardRefresh = hardRefresh) }
             .onEitherError { updateState { copy(chapterFeedLoading = false) } }
             .filterEitherSuccess()
             .flatMapLatest {

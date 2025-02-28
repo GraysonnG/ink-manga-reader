@@ -29,7 +29,7 @@ class MangaListViewModel(
             launch {
                 mangaRepository.getList(
                     mangaListRequest!!,
-                    hardRefresh = true,
+                    hardRefresh = hardRefresh,
                     limit = CHUNK_SIZE,
                     offset = 0,
                 ).collect { either ->

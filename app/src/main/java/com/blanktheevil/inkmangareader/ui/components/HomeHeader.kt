@@ -39,12 +39,9 @@ import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.statusBarSize
 import kotlinx.coroutines.delay
 
-private const val BREAKPOINT = 500
-private const val ANIMATION_DURATION = 500
-
 @Composable
 fun HomeHeader(
-    scrollOffset: Int,
+    scrollFraction: Float,
     authenticated: Boolean,
     authenticatedInitialState: Boolean = false,
     onSearchClicked: () -> Unit = {},
@@ -60,16 +57,9 @@ fun HomeHeader(
         auth = authenticated
     }
 
-    val buttonColor by animateColorAsState(
-        targetValue = if (scrollOffset <= BREAKPOINT) Color.Black.copy(alpha = 0.6f) else Color.Transparent,
-        label = "buttonColor",
-        animationSpec = tween(ANIMATION_DURATION)
-    )
-    val headerColor by animateColorAsState(
-        targetValue = if (scrollOffset <= BREAKPOINT) Color.Transparent else Color.Black.copy(alpha = 0.8f),
-        label = "headerColor",
-        animationSpec = tween(ANIMATION_DURATION)
-    )
+    val buttonColor = remember(scrollFraction) {
+        Color.Black.copy(alpha = (1 - scrollFraction) * .8f)
+    }
 
     val iconButtonColors = IconButtonDefaults.iconButtonColors(
         contentColor = Color.White,
@@ -84,7 +74,6 @@ fun HomeHeader(
             modifier = Modifier
                 .zIndex(1000f)
                 .fillMaxWidth()
-                .background(headerColor)
                 .padding(top = statusBarSize),
             horizontalArrangement = Arrangement.End,
         ) {
@@ -144,7 +133,7 @@ private fun Preview() = DefaultPreview {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        HomeHeader(scrollOffset = 0, authenticated = true, authenticatedInitialState = true)
-        HomeHeader(scrollOffset = 500, authenticated = true)
+        HomeHeader(scrollFraction = 0f, authenticated = true, authenticatedInitialState = true)
+        HomeHeader(scrollFraction = 1f, authenticated = true)
     }
 }

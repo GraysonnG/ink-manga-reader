@@ -15,6 +15,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -37,7 +38,9 @@ fun ImageHeader(
     url: String?,
     @DrawableRes placeholder: Int? = null,
     headerArea: @Composable BoxScope.(scrollFraction: Float) -> Unit,
-    content: @Composable (NestedScrollConnection) -> Unit
+    onCollapsed: () -> Unit = {},
+    onExpanded: () -> Unit = {},
+    content: @Composable (NestedScrollConnection) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         state = rememberTopAppBarState()
@@ -58,6 +61,13 @@ fun ImageHeader(
     SideEffect {
         if (scrollBehavior.state.heightOffsetLimit != collapsedHeightPx - expandedHeightPx) {
             scrollBehavior.state.heightOffsetLimit = collapsedHeightPx - expandedHeightPx
+        }
+    }
+
+    LaunchedEffect(scrollBehavior.state.collapsedFraction) {
+        when (scrollBehavior.state.collapsedFraction) {
+            1f -> onCollapsed()
+            0f -> onExpanded()
         }
     }
 
