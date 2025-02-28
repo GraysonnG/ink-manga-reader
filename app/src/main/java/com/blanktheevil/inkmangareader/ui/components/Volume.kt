@@ -32,6 +32,9 @@ import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
+import com.blanktheevil.inkmangareader.ui.theme.LocalContainerSwatch
+import com.blanktheevil.inkmangareader.ui.theme.LocalPrimarySwatch
+import com.blanktheevil.inkmangareader.ui.theme.LocalSurfaceSwatch
 
 @Composable
 fun Volume(title: String, chapters: List<Chapter>) = Column(
@@ -41,7 +44,7 @@ fun Volume(title: String, chapters: List<Chapter>) = Column(
         .clip(RoundedCornerShape(8.dp))
         .border(
             1.dp,
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+            LocalPrimarySwatch.current.color.copy(alpha = 0.2f),
             shape = RoundedCornerShape(8.dp)
         )
         .padding(8.dp),
@@ -71,11 +74,14 @@ fun Volume(title: String, chapters: List<Chapter>) = Column(
                 Column(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
+                        .background(LocalContainerSwatch.current.color.copy(alpha = 0.2f))
                         .padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(text = "Chapter ${ch ?: 0}", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = "Chapter ${ch ?: 0}",
+                        style = MaterialTheme.typography.labelSmall
+                    )
                     items.forEach {
                         ChapterButton(chapter = it)
                     }
@@ -117,7 +123,7 @@ fun VolumesSkeleton() = Column {
                     .padding(8.dp)
                     .border(
                         1.dp,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        LocalPrimarySwatch.current.color.copy(alpha = 0.2f),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(8.dp),
@@ -130,7 +136,7 @@ fun VolumesSkeleton() = Column {
                     repeat(3) {
                         Box(modifier = Modifier
                             .clip(RoundedCornerShape(2.dp))
-                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f))
+                            .background(LocalSurfaceSwatch.current.onColor.copy(alpha = 0.15f))
                             .height(12.dp)
                             .width(50.dp)
                         )
@@ -142,13 +148,13 @@ fun VolumesSkeleton() = Column {
                         Box(modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(50))
-                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .background(LocalContainerSwatch.current.color)
                             .height(44.dp)
                         )
                         Box(modifier = Modifier
                             .offset(x = 32.dp)
                             .clip(RoundedCornerShape(bottomEnd = 4.dp, bottomStart = 4.dp))
-                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                            .background(LocalSurfaceSwatch.current.onColor.copy(alpha = 0.1f))
                             .height(20.dp)
                             .width(100.dp)
                         )

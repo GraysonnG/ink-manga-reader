@@ -31,19 +31,25 @@ private fun buttonColor(): Color = MaterialTheme.colorScheme.primaryContainer
 @Composable
 private fun onButtonColor(): Color = MaterialTheme.colorScheme.onPrimaryContainer
 
+val DefaultInkButtonColors: InkButtonColors
+    @Composable get() = InkButtonColors(
+        container = buttonColor(),
+        onContainer = onButtonColor(),
+    )
+
 @Composable
 fun SimpleInkButton(
     onClick: () -> Unit,
     title: @Composable RowScope.() -> Unit,
-    color: Color = buttonColor(),
+    colors: InkButtonColors = DefaultInkButtonColors,
     background: (@Composable BoxScope.() -> Unit)? = null,
     trailingIcon: (@Composable RowScope.() -> Unit)? = null,
-) = CompositionLocalProvider(LocalContentColor provides onButtonColor()){
+) = CompositionLocalProvider(LocalContentColor provides colors.onContainer){
     Box(modifier = Modifier
         .height(IntrinsicSize.Min)
         .fillMaxWidth()
         .clip(RoundedCornerShape(50))
-        .background(color)
+        .background(colors.container)
         .heightIn(min = 40.dp)
     ) {
         background?.invoke(this)
@@ -74,3 +80,8 @@ fun SimpleInkButton(
         }
     }
 }
+
+data class InkButtonColors(
+    val container: Color,
+    val onContainer: Color,
+)

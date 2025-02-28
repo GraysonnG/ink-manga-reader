@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -62,6 +63,13 @@ import com.blanktheevil.inkmangareader.ui.components.ImageHeader
 import com.blanktheevil.inkmangareader.ui.components.VolumesSkeleton
 import com.blanktheevil.inkmangareader.ui.components.volumeItems
 import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
+import com.blanktheevil.inkmangareader.ui.theme.LocalContainerSwatch
+import com.blanktheevil.inkmangareader.ui.theme.LocalPrimarySwatch
+import com.blanktheevil.inkmangareader.ui.theme.LocalSurfaceSwatch
+import com.blanktheevil.inkmangareader.ui.theme.containerSwatch
+import com.blanktheevil.inkmangareader.ui.theme.primarySwatch
+import com.blanktheevil.inkmangareader.ui.theme.surfaceSwatch
+import com.blanktheevil.inkmangareader.ui.theme.toColorPalette
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.Params
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.State
@@ -74,19 +82,27 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
 ) {_, uiState, _ ->
     val nav = LocalNavController.current
     val readerManager = koinInject<ReaderManager>()
+    val palette = uiState.manga?.toColorPalette()
+
     uiState.manga?.let { manga ->
-        MangaDetailLayout(
-            manga,
-            uiState.chapterFeed,
-            firstChapter = uiState.firstChapter,
-            onBackButtonClicked = { nav.popBackStack() },
-            onMenuItemClicked = {},
-            onStartReadingClicked = {
-                uiState.firstChapter?.let {
-                    readerManager.setChapter(it.id)
+        CompositionLocalProvider(
+            LocalPrimarySwatch provides palette.primarySwatch,
+            LocalContainerSwatch provides palette.containerSwatch,
+            LocalSurfaceSwatch provides palette.surfaceSwatch,
+        ) {
+            MangaDetailLayout(
+                manga,
+                uiState.chapterFeed,
+                firstChapter = uiState.firstChapter,
+                onBackButtonClicked = { nav.popBackStack() },
+                onMenuItemClicked = {},
+                onStartReadingClicked = {
+                    uiState.firstChapter?.let {
+                        readerManager.setChapter(it.id)
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }
 
@@ -99,6 +115,9 @@ private fun MangaDetailLayout(
     onStartReadingClicked: () -> Unit = {},
     onBackButtonClicked: () -> Unit = {},
     onMenuItemClicked: (Int) -> Unit = {},
+) = Surface(
+    color = LocalSurfaceSwatch.current.color,
+    contentColor = LocalSurfaceSwatch.current.onColor,
 ) {
     val headerHeight = LocalConfiguration.current.screenHeightDp.dp.times(0.5f)
     val volumes = remember(chapters) {
@@ -121,30 +140,34 @@ private fun MangaDetailLayout(
         },
         placeholder = headerPlaceholderImage,
     ) { nestedScrollConnection ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(nestedScrollConnection),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            userScrollEnabled = chapters.items.isNotEmpty()
+        CompositionLocalProvider(
+            LocalContentColor provides LocalSurfaceSwatch.current.onColor
         ) {
-            item {
-                MarkdownText(
-                    manga.description,
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .padding(horizontal = 8.dp)
-                    ,
-                    linkColor = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 99,
-                )
-            }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(nestedScrollConnection),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                userScrollEnabled = chapters.items.isNotEmpty()
+            ) {
+                item {
+                    MarkdownText(
+                        manga.description,
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .padding(horizontal = 8.dp)
+                        ,
+                        linkColor = LocalPrimarySwatch.current.color,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 99,
+                    )
+                }
 
-            if (chapters.items.isEmpty()) {
-                item { VolumesSkeleton() }
-            } else {
-                volumeItems(volumes)
+                if (chapters.items.isEmpty()) {
+                    item { VolumesSkeleton() }
+                } else {
+                    volumeItems(volumes)
+                }
             }
         }
     }
@@ -257,8 +280,8 @@ private fun BoxScope.TitleDetailContent(
         ) {
             manga.tags.take(4).forEach {
                 Badge(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = LocalContainerSwatch.current.color,
+                    contentColor = LocalContainerSwatch.current.onColor,
                 ) { Text(text = it) }
             }
         }

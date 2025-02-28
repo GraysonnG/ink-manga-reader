@@ -58,13 +58,17 @@ import com.blanktheevil.inkmangareader.reader.ReaderManager
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
+import com.blanktheevil.inkmangareader.ui.theme.LocalContainerSwatch
+import com.blanktheevil.inkmangareader.ui.theme.LocalPrimarySwatch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
-fun ColumnScope.ChapterButton(chapter: Chapter) = Box {
+fun ColumnScope.ChapterButton(
+    chapter: Chapter
+) = Box {
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
         onResult = {}
@@ -90,6 +94,8 @@ fun ColumnScope.ChapterButton(chapter: Chapter) = Box {
 
     if (isNew) {
         Badge(
+            contentColor = LocalPrimarySwatch.current.onColor,
+            containerColor = LocalPrimarySwatch.current.color,
             modifier = Modifier
                 .zIndex(2f)
                 .offset(
@@ -106,6 +112,10 @@ fun ColumnScope.ChapterButton(chapter: Chapter) = Box {
         InternalButton(
             chapterId = chapter.id,
             title = chapter.title.medium,
+            colors = InkButtonColors(
+                container = LocalContainerSwatch.current.color,
+                onContainer = LocalContainerSwatch.current.onColor,
+            ),
             isDownloaded = chapterDownloaded,
             isExternal = chapter.externalUrl != null,
             refreshIsDownloaded = ::refreshIsDownloaded,
@@ -156,6 +166,7 @@ private fun InternalButton(
     downloadManager: DownloadManager,
     refreshIsDownloaded: suspend () -> Unit,
     leadingIcon: @Composable () -> Unit,
+    colors: InkButtonColors = DefaultInkButtonColors,
     onClick: () -> Unit = { },
 ) {
     val scope = rememberCoroutineScope()
@@ -165,6 +176,7 @@ private fun InternalButton(
 
     SimpleInkButton(
         onClick = onClick,
+        colors = colors,
         title = {
             leadingIcon()
 

@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
@@ -19,6 +20,12 @@ import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.LocalWindow
 import com.blanktheevil.inkmangareader.ui.reader.Reader
 import com.blanktheevil.inkmangareader.ui.theme.InkMangaReaderTheme
+import com.blanktheevil.inkmangareader.ui.theme.LocalContainerSwatch
+import com.blanktheevil.inkmangareader.ui.theme.LocalPrimarySwatch
+import com.blanktheevil.inkmangareader.ui.theme.LocalSurfaceSwatch
+import com.blanktheevil.inkmangareader.ui.theme.containerSwatch
+import com.blanktheevil.inkmangareader.ui.theme.primarySwatch
+import com.blanktheevil.inkmangareader.ui.theme.surfaceSwatch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +39,10 @@ class MainActivity : ComponentActivity() {
             InkMangaReaderTheme {
                 CompositionLocalProvider(
                     LocalNavController provides rememberNavController(),
-                    LocalWindow provides window
+                    LocalWindow provides window,
+                    LocalPrimarySwatch provides MaterialTheme.colorScheme.primarySwatch,
+                    LocalContainerSwatch provides MaterialTheme.colorScheme.containerSwatch,
+                    LocalSurfaceSwatch provides MaterialTheme.colorScheme.surfaceSwatch,
                 ) {
                     Box {
                         Scaffold {
