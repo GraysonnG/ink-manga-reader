@@ -49,6 +49,10 @@ fun PrimaryNavGraph(
                 navDeepLink {
                     uriPattern = "https://mangadex.org/title/{mangaId}/.*"
                     action = Intent.ACTION_VIEW
+                },
+                navDeepLink {
+                    uriPattern = "https://mangadex.org/title/{mangaId}"
+                    action = Intent.ACTION_VIEW
                 }
             )
         ) {

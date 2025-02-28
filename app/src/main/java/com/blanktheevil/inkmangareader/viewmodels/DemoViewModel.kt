@@ -170,6 +170,11 @@ class DemoViewModel(
     private fun getUserLists(hardRefresh: Boolean) = viewModelScope.launch(
         Dispatchers.IO
     ) {
+        if (!hardRefresh && _uiState.value.userLists.isNotEmpty()) {
+            updateState { copy(userListsLoading = false) }
+            return@launch
+        }
+
         updateState { copy(userListsLoading = true) }
         sessionManager.session
             .filterNotNull()
@@ -179,7 +184,7 @@ class DemoViewModel(
             .flatMapMerge { userLists ->
                 combine(
                     userLists.entries
-                        .take(3)
+                        .take(5)
                         .map { entry -> entry.key }
                         .map { listId ->
                             mangaRepository.getList(

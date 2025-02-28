@@ -1,5 +1,6 @@
 package com.blanktheevil.inkmangareader.ui.pages
 
+import android.content.ClipData
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,8 +45,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -60,6 +64,7 @@ import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.components.ImageHeader
+import com.blanktheevil.inkmangareader.ui.components.InkMenuItem
 import com.blanktheevil.inkmangareader.ui.components.VolumesSkeleton
 import com.blanktheevil.inkmangareader.ui.components.volumeItems
 import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
@@ -83,6 +88,7 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
     val nav = LocalNavController.current
     val readerManager = koinInject<ReaderManager>()
     val palette = uiState.manga?.toColorPalette()
+    val clipManager = LocalClipboardManager.current
 
     uiState.manga?.let { manga ->
         CompositionLocalProvider(
@@ -94,8 +100,18 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
                 manga,
                 uiState.chapterFeed,
                 firstChapter = uiState.firstChapter,
+                loading = uiState.loading,
                 onBackButtonClicked = { nav.navigateUp() },
-                onMenuItemClicked = {},
+                onMenuItemClicked = {
+                    when(it) {
+                        0,
+                        1 -> {}
+                        2 -> {
+                            val clipData = ClipData.newPlainText(manga.title, "https://mangadex.org/title/${manga.id}")
+                            clipManager.setClip(ClipEntry(clipData))
+                        }
+                    }
+                },
                 onStartReadingClicked = {
                     uiState.firstChapter?.let {
                         readerManager.setChapter(it.id)
@@ -110,6 +126,7 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
 private fun MangaDetailLayout(
     manga: Manga,
     chapters: ChapterList,
+    loading: Boolean,
     firstChapter: LinkedChapter? = null,
     @DrawableRes headerPlaceholderImage: Int? = null,
     onStartReadingClicked: () -> Unit = {},
@@ -163,7 +180,7 @@ private fun MangaDetailLayout(
                     )
                 }
 
-                if (chapters.items.isEmpty()) {
+                if (loading) {
                     item { VolumesSkeleton() }
                 } else {
                     volumeItems(volumes)
@@ -231,8 +248,15 @@ private fun HeaderArea(
             ) {
                 InkIcon(resId = R.drawable.baseline_more_horiz_24)
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    DropdownMenuItem(text = { Text("Add To List") }, onClick = { onMenuItemClicked(0) })
-                    DropdownMenuItem(text = { Text("Follow") }, onClick = { onMenuItemClicked(1) })
+                    InkMenuItem(icon = R.drawable.round_add_24, text = "Add To List") {
+                        onMenuItemClicked(0)
+                    }
+                    InkMenuItem(icon = R.drawable.round_favorite_border_24, text = "Follow") {
+                        onMenuItemClicked(1)
+                    }
+                    InkMenuItem(icon = R.drawable.round_share_24, text = "Share") {
+                        onMenuItemClicked(2)
+                    }
                 }
             }
         }
@@ -341,6 +365,7 @@ private fun Preview() = DefaultPreview {
             vol = { i -> if (i % 4 != 0) i % 4 else null },
             length = 16
         ),
+        loading = false,
         headerPlaceholderImage = R.drawable.manga_placeholder
     )
 }

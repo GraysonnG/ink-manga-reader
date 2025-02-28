@@ -55,12 +55,6 @@ class MangaDetailViewModel(
                     loading = false,
                 ) }
             }
-
-            it.onNull {
-                updateState { copy(
-                    loading = false,
-                ) }
-            }
         }
     }
 
@@ -94,7 +88,7 @@ class MangaDetailViewModel(
     }
 
     data class State(
-        override val loading: Boolean = false,
+        override val loading: Boolean = true,
         override val errors: List<Any> = emptyList(),
         val manga: Manga? = null,
         val chapterFeed: ChapterList = emptyDataList(),

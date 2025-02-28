@@ -95,7 +95,7 @@ fun Volume(title: String, chapters: List<Chapter>) = Column(
 }
 
 fun LazyListScope.volumeItems(volumes: Map<String, List<Chapter>>) =
-    items(volumes.entries.toList()) { (volume, chapters) ->
+    items(volumes.entries.toList(), key = { (volume, _) -> "vol-$volume" }) { (volume, chapters) ->
         Volume("Vol. $volume", chapters)
     }
 

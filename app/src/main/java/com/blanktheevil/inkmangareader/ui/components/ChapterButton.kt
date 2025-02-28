@@ -27,7 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -93,6 +93,8 @@ fun ColumnScope.ChapterButton(
     }
 
     if (isNew) {
+        val isNewString = stringResource(id = R.string.chapter_button_badge_new)
+
         Badge(
             contentColor = LocalPrimarySwatch.current.onColor,
             containerColor = LocalPrimarySwatch.current.color,
@@ -103,7 +105,7 @@ fun ColumnScope.ChapterButton(
                     x = 6.dp.unaryMinus(),
                 ),
             content = {
-                Text("New")
+                Text(isNewString)
             }
         )
     }
@@ -268,6 +270,8 @@ private fun ScanlationGroup?.GroupLink(
     modifier = Modifier.padding(start = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
 ) {
+    val noGroupString = stringResource(id = R.string.chapter_button_group_none)
+
     Row(
         Modifier
             .weight(1f)
@@ -280,7 +284,7 @@ private fun ScanlationGroup?.GroupLink(
         )
 
         Text(
-            this@GroupLink?.name ?: "No Group",
+            this@GroupLink?.name ?: noGroupString,
             modifier = Modifier
                 .widthIn(max = 300.dp)
                 .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp))
@@ -365,39 +369,26 @@ private fun ChapterMenu(
     expanded = expanded,
     onDismissRequest = onDismissRequest
 ) {
+    val removeDownloadString = stringResource(id = R.string.chapter_button_menu_item_remove)
+    val downloadString = stringResource(id = R.string.chapter_button_menu_item_download)
+    val readLaterString = stringResource(id = R.string.chapter_button_menu_item_read_later)
+
     if (isDownloaded) {
-        DropdownMenuItem(text = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                InkIcon(resId = R.drawable.rounded_download_24)
-                Spacer(modifier = Modifier.size(4.dp))
-                Text(text = "Remove Download")
-            }
-        }, onClick = {
-            onDismissRequest()
+        InkMenuItem(icon = R.drawable.rounded_download_24, text = removeDownloadString) {
             onDeleteDownloadClicked()
-        })
-    } else {
-        DropdownMenuItem(text = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                InkIcon(resId = R.drawable.rounded_download_24)
-                Spacer(modifier = Modifier.size(4.dp))
-                Text(text = "Download")
-            }
-        }, onClick = {
             onDismissRequest()
-            onDownloadClicked()
-        })
-    }
-    DropdownMenuItem(text = {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            InkIcon(resId = R.drawable.read_24)
-            Spacer(modifier = Modifier.size(4.dp))
-            Text(text = "Read Later")
         }
-    }, onClick = {
-        onDismissRequest()
+    } else {
+        InkMenuItem(icon = R.drawable.rounded_download_24, text = downloadString) {
+            onDownloadClicked()
+            onDismissRequest()
+        }
+    }
+
+    InkMenuItem(icon = R.drawable.read_24, text = readLaterString) {
         onReadLaterClicked()
-    })
+        onDismissRequest()
+    }
 }
 
 @PreviewLightDark

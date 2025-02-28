@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Ink Manga Reader</string>
+    <string name="chapter_button_menu_item_read_later">Read Later</string>
+    <string name="chapter_button_menu_item_download">Download</string>
+    <string name="chapter_button_menu_item_remove">Remove Download</string>
+    <string name="chapter_button_group_none">No Group\n</string>
+    <string name="chapter_button_badge_new">New</string>
 </resources>

@@ -68,6 +68,7 @@ fun MangaCard(
 
         Text(
             text = manga.title,
+            minLines = 2,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.labelLarge,
