@@ -5,7 +5,7 @@ making this app possible
 
 ## Work In Progress
 
-This application is a work in progress and thus does not meet the standards required by the api just
+This application is a work in progress and thus does not meet the standards required by the mangadex api just
 yet. I am not distributing this nor is it published anywhere.
 
 ## Getting Started
