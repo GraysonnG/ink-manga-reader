@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="manga_feed_card_subtitle">
+        <item quantity="one">1 unread chapter.</item>
+        <item quantity="other">%d unread chapters.</item>
+    </plurals>
+</resources>

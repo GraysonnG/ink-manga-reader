@@ -31,9 +31,7 @@ fun RowLink(
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
             .clip(RoundedCornerShape(4.dp))
-            .clickable(
-                onClick = onClick,
-            )
+            .clickable(onClick = onClick)
         ,
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,

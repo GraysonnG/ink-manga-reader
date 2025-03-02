@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -131,22 +132,18 @@ private inline fun FeatureItem(
     modifier: Modifier = Modifier,
     crossinline onItemClicked: (mangaId: String) -> Unit,
 ) {
-    val coverImage = manga.coverArt
-        .toAsyncPainterImage(crossfade = true)
+    val coverImage = manga.coverArt.toAsyncPainterImage(crossfade = true)
+    val readString = stringResource(id = R.string.feature_carousel_item_read)
 
     CompositionLocalProvider(
         LocalContentColor provides Color.White,
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
             Image(
                 painter = coverImage,
                 modifier = Modifier
                     .fillMaxSize(),
-                contentDescription = "",
+                contentDescription = null,
                 contentScale = ContentScale.Crop,
                 alignment = Alignment.Center,
             )
@@ -190,7 +187,7 @@ private inline fun FeatureItem(
                 Button(onClick = { onItemClicked(manga.id) }) {
                     InkIcon(resId = R.drawable.read_24)
                     Spacer(modifier = Modifier.size(4.dp))
-                    Text(text = "Read")
+                    Text(text = readString)
                 }
             }
         }

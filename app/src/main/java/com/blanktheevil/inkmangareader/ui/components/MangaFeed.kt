@@ -25,10 +25,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.stubs.StubData
@@ -42,7 +45,8 @@ fun MangaFeed(
     onClick: (mangaId: String) -> Unit,
 ) = Column {
     val list = remember(feed) { feed.entries.toList() }
-    RowLink(title = "Your Updates")
+    val yourUpdatesTitleString = stringResource(id = R.string.manga_feed_section_title)
+    RowLink(title = yourUpdatesTitleString)
     Spacer(modifier = Modifier.size(8.dp))
     LazyRow(
         modifier = modifier,
@@ -99,10 +103,14 @@ private fun MangaItem(
         overflow = TextOverflow.Ellipsis,
         style = MaterialTheme.typography.labelLarge,
     )
-    val text = when {
-        unreadChapters > 1 -> "$unreadChapters unread chapters."
-        unreadChapters == 1 -> "1 unread chapter."
-        else -> "All caught up!"
+    val text = if (unreadChapters == 0) {
+        stringResource(id = R.string.manga_feed_card_subtitle_zero)
+    } else {
+        pluralStringResource(
+            id = R.plurals.manga_feed_card_subtitle,
+            count = unreadChapters,
+            unreadChapters
+        )
     }
 
     val color = if (unreadChapters > 0) {

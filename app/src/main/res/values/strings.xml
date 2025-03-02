@@ -5,4 +5,7 @@
     <string name="chapter_button_menu_item_remove">Remove Download</string>
     <string name="chapter_button_group_none">No Group\n</string>
     <string name="chapter_button_badge_new">New</string>
+    <string name="feature_carousel_item_read">Read</string>
+    <string name="manga_feed_section_title">Your Updates</string>
+    <string name="manga_feed_card_subtitle_zero">All caught up!</string>
 </resources>
