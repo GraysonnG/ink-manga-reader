@@ -8,10 +8,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
+import com.blanktheevil.inkmangareader.data.isInvalid
 import com.blanktheevil.inkmangareader.data.isValid
 import com.blanktheevil.inkmangareader.viewmodels.BaseViewModel
 import com.blanktheevil.inkmangareader.viewmodels.BaseViewModelState
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -21,6 +24,7 @@ inline fun <reified VM: BaseViewModel<UIState, Params>, UIState: BaseViewModelSt
     viewModelParams: Params? = null,
     noinline content: @Composable BasePageScope.(viewModel: VM, uiState: UIState, authenticated: Boolean) -> Unit,
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val sessionManager = koinInject<SessionManager>()
     val session by sessionManager.session.collectAsState()
     val isSessionValid by remember { derivedStateOf { session.isValid() } }
@@ -38,6 +42,9 @@ inline fun <reified VM: BaseViewModel<UIState, Params>, UIState: BaseViewModelSt
     PullToRefreshBox(
         isRefreshing = state.loading,
         onRefresh = {
+            coroutineScope.launch {
+                if (session.isInvalid()) sessionManager.refresh()
+            }
             viewModel.initViewModel(true, viewModelParams)
         }
     ) {

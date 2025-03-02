@@ -1,17 +1,18 @@
 package com.blanktheevil.inkmangareader.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.error
 import com.blanktheevil.inkmangareader.data.filterEitherSuccess
 import com.blanktheevil.inkmangareader.data.isInvalid
-import com.blanktheevil.inkmangareader.data.isValid
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.models.MangaList
 import com.blanktheevil.inkmangareader.data.onEitherError
+import com.blanktheevil.inkmangareader.data.onUniqueSessionState
 import com.blanktheevil.inkmangareader.data.repositories.ChapterListRequest
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
@@ -19,14 +20,13 @@ import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
@@ -85,15 +85,20 @@ class DemoViewModel(
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     private fun getFollowedMangaUpdatesFeed(hardRefresh: Boolean) = viewModelScope.launch(
         Dispatchers.IO
     ) {
         updateState { copy(chapterFeedLoading = true) }
         sessionManager.session
-            .onEach { if (it.isInvalid()) updateState { copy(chapterFeedLoading = false) } }
-            .filterNotNull()
-            .filter { it.isValid() }
+            .onEach {
+                if (it.isInvalid()) {
+                    sessionManager.refresh()
+//                    updateState { copy(chapterFeedLoading = false) }
+                }
+            }
+            .onUniqueSessionState()
+            .onEach { Log.d(this@DemoViewModel::class.java.simpleName, "Followed Feed Session Valid: $it") }
             .flatMapLatest { chapterRepository.getList(ChapterListRequest.Follows, limit = 30, hardRefresh = hardRefresh) }
             .onEitherError { updateState { copy(chapterFeedLoading = false) } }
             .filterEitherSuccess()
@@ -177,8 +182,8 @@ class DemoViewModel(
 
         updateState { copy(userListsLoading = true) }
         sessionManager.session
-            .filterNotNull()
-            .filter { it.isValid() }
+            .onUniqueSessionState()
+            .onEach { Log.d(this@DemoViewModel::class.java.simpleName, "Lists Valid Session") }
             .map { userListRepository.getCurrentLists().successOrNull() }
             .filterNotNull()
             .flatMapMerge { userLists ->
