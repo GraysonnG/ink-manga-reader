@@ -6,13 +6,14 @@ import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.error
 import com.blanktheevil.inkmangareader.data.filterEitherSuccess
+import com.blanktheevil.inkmangareader.data.id
 import com.blanktheevil.inkmangareader.data.isInvalid
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.models.MangaList
 import com.blanktheevil.inkmangareader.data.onEitherError
-import com.blanktheevil.inkmangareader.data.onUniqueSessionState
+import com.blanktheevil.inkmangareader.data.onUniqueSession
 import com.blanktheevil.inkmangareader.data.repositories.ChapterListRequest
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
@@ -22,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
@@ -94,12 +96,15 @@ class DemoViewModel(
             .onEach {
                 if (it.isInvalid()) {
                     sessionManager.refresh()
-//                    updateState { copy(chapterFeedLoading = false) }
+                    if (sessionManager.session.value.isInvalid()) {
+                        updateState { copy(chapterFeedLoading = false) }
+                    }
                 }
             }
-            .onUniqueSessionState()
+            .onUniqueSession()
             .onEach { Log.d(this@DemoViewModel::class.java.simpleName, "Followed Feed Session Valid: $it") }
             .flatMapLatest { chapterRepository.getList(ChapterListRequest.Follows, limit = 30, hardRefresh = hardRefresh) }
+            .distinctUntilChangedBy { it.successOrNull()?.id }
             .onEitherError { updateState { copy(chapterFeedLoading = false) } }
             .filterEitherSuccess()
             .flatMapLatest {
@@ -182,7 +187,7 @@ class DemoViewModel(
 
         updateState { copy(userListsLoading = true) }
         sessionManager.session
-            .onUniqueSessionState()
+            .onUniqueSession()
             .onEach { Log.d(this@DemoViewModel::class.java.simpleName, "Lists Valid Session") }
             .map { userListRepository.getCurrentLists().successOrNull() }
             .filterNotNull()
@@ -194,7 +199,8 @@ class DemoViewModel(
                         .map { listId ->
                             mangaRepository.getList(
                                 MangaListRequest.UserList(listId = listId),
-                                hardRefresh = hardRefresh
+                                hardRefresh = hardRefresh,
+                                limit = 15,
                             )
                         }
                 ) { comb ->

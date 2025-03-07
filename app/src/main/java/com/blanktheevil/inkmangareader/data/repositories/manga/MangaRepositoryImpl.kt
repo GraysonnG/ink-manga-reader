@@ -147,7 +147,7 @@ class MangaRepositoryImpl(
                     ?.getFirstOfType<UserDto>()
 
                 if (ids.isNotEmpty()) {
-                    mangaDexApi.getManga(ids = ids.take(15), limit = limit, offset = offset)
+                    mangaDexApi.getManga(ids = ids.take(99), limit = limit, offset = offset)
                         .toMangaList(
                             title = res.data.attributes.name,
                             extras = mapOf(

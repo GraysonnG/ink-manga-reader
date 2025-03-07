@@ -24,7 +24,7 @@ fun Session.isExpired() = System.currentTimeMillis() >= expires
 fun Session?.isValid() = this != null && !this.isExpired()
 fun Session?.isInvalid() = this == null || this.isExpired()
 
-fun Flow<Session?>.onUniqueSessionState(): Flow<Boolean> =
+fun Flow<Session?>.onUniqueSession(): Flow<Boolean> =
     filterNotNull()
         .filter { it.isValid() }
         .map { it.isValid() }

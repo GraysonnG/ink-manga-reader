@@ -1,5 +1,7 @@
 package com.blanktheevil.inkmangareader.data
 
+import com.blanktheevil.inkmangareader.data.models.BaseItem
+import com.blanktheevil.inkmangareader.helpers.sha256
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
@@ -13,6 +15,8 @@ data class DataList<T>(
 )
 
 fun <T> emptyDataList(): DataList<T> = DataList(emptyList())
+
+val DataList<out BaseItem>.id: String get() = items.joinToString("") { it.id }.sha256()
 
 inline fun <T, R> DataList<T>.map(transform: (T) -> R) = DataList(
     title = title,
