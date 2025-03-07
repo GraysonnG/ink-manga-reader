@@ -24,7 +24,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
@@ -49,7 +49,6 @@ import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -84,7 +83,7 @@ import org.koin.compose.koinInject
 @Composable
 fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Params>(
     viewModelParams = Params(mangaId)
-) {_, uiState, _ ->
+) {viewModel, uiState, _ ->
     val nav = LocalNavController.current
     val readerManager = koinInject<ReaderManager>()
     val palette = uiState.manga?.toColorPalette()
@@ -101,6 +100,7 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
                 uiState.chapterFeed,
                 firstChapter = uiState.firstChapter,
                 loading = uiState.loading,
+                followed = uiState.followed,
                 onBackButtonClicked = { nav.navigateUp() },
                 onMenuItemClicked = {
                     when(it) {
@@ -116,6 +116,9 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
                     uiState.firstChapter?.let {
                         readerManager.setChapter(it.id)
                     }
+                },
+                onFollowButtonClicked = {
+                    viewModel.toggleFollowManga()
                 }
             )
         }
@@ -127,11 +130,13 @@ private fun MangaDetailLayout(
     manga: Manga,
     chapters: ChapterList,
     loading: Boolean,
+    followed: Boolean,
     firstChapter: LinkedChapter? = null,
     @DrawableRes headerPlaceholderImage: Int? = null,
     onStartReadingClicked: () -> Unit = {},
     onBackButtonClicked: () -> Unit = {},
     onMenuItemClicked: (Int) -> Unit = {},
+    onFollowButtonClicked: () -> Unit = {},
 ) = Surface(
     color = LocalSurfaceSwatch.current.color,
     contentColor = LocalSurfaceSwatch.current.onColor,
@@ -140,51 +145,78 @@ private fun MangaDetailLayout(
     val volumes = remember(chapters) {
         chapters.items.groupBy { it.volume ?: "No Volume" }
     }
+    val followButtonIcon = if (followed) {
+        R.drawable.round_favorite_24
+    } else {
+        R.drawable.round_favorite_border_24
+    }
 
-    ImageHeader(
-        initialHeight = headerHeight,
-        minHeight = 64.dp,
-        url = manga.coverArt,
-        headerArea = {
-            HeaderArea(
-                manga = manga,
-                firstChapter = firstChapter,
-                scrollFraction = it,
-                onBackButtonClicked = onBackButtonClicked,
-                onStartReadingClicked = onStartReadingClicked,
-                onMenuItemClicked = onMenuItemClicked,
-            )
-        },
-        placeholder = headerPlaceholderImage,
-    ) { nestedScrollConnection ->
-        CompositionLocalProvider(
-            LocalContentColor provides LocalSurfaceSwatch.current.onColor
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .nestedScroll(nestedScrollConnection),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                userScrollEnabled = chapters.items.isNotEmpty()
+    Box {
+        ImageHeader(
+            initialHeight = headerHeight,
+            minHeight = 64.dp,
+            url = manga.coverArt,
+            headerArea = {
+                HeaderArea(
+                    manga = manga,
+                    firstChapter = firstChapter,
+                    scrollFraction = it,
+                    onBackButtonClicked = onBackButtonClicked,
+                    onStartReadingClicked = onStartReadingClicked,
+                    onMenuItemClicked = onMenuItemClicked,
+                )
+            },
+            placeholder = headerPlaceholderImage,
+        ) { nestedScrollConnection ->
+            CompositionLocalProvider(
+                LocalContentColor provides LocalSurfaceSwatch.current.onColor
             ) {
-                item {
-                    MarkdownText(
-                        manga.description,
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .padding(horizontal = 8.dp)
-                        ,
-                        linkColor = LocalPrimarySwatch.current.color,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 99,
-                    )
-                }
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(nestedScrollConnection),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    userScrollEnabled = chapters.items.isNotEmpty()
+                ) {
+                    item {
+                        MarkdownText(
+                            manga.description,
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .padding(horizontal = 8.dp)
+                            ,
+                            linkColor = LocalPrimarySwatch.current.color,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 99,
+                        )
+                    }
 
-                if (loading) {
-                    item { VolumesSkeleton() }
-                } else {
-                    volumeItems(volumes)
+                    if (loading) {
+                        item { VolumesSkeleton() }
+                    } else {
+                        volumeItems(volumes)
+                    }
                 }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .padding(all = 8.dp)
+                .align(Alignment.BottomEnd)
+                .fillMaxWidth()
+            ,
+            horizontalArrangement = Arrangement.End,
+        ) {
+            FloatingActionButton(
+                onClick = onFollowButtonClicked,
+                containerColor = LocalPrimarySwatch.current.color,
+                contentColor = LocalPrimarySwatch.current.onColor,
+            ) {
+                InkIcon(
+                    modifier = Modifier.offset(y = 1.dp),
+                    resId = followButtonIcon
+                )
             }
         }
     }
@@ -247,16 +279,8 @@ private fun HeaderArea(
                 onClick = { menuOpen = true }
             ) {
                 InkIcon(resId = R.drawable.baseline_more_horiz_24)
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    InkMenuItem(icon = R.drawable.round_add_24, text = "Add To List") {
-                        onMenuItemClicked(0)
-                    }
-                    InkMenuItem(icon = R.drawable.round_favorite_border_24, text = "Follow") {
-                        onMenuItemClicked(1)
-                    }
-                    InkMenuItem(icon = R.drawable.round_share_24, text = "Share") {
-                        onMenuItemClicked(2)
-                    }
+                DetailMenu(menuOpen = menuOpen, onMenuItemClicked = onMenuItemClicked) {
+                    menuOpen = false
                 }
             }
         }
@@ -271,6 +295,25 @@ private fun HeaderArea(
             manga = manga,
             firstChapter = firstChapter,
         )
+    }
+}
+
+@Composable
+fun DetailMenu(
+    menuOpen: Boolean,
+    onMenuItemClicked: (Int) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    DropdownMenu(expanded = menuOpen, onDismissRequest = onDismissRequest) {
+        InkMenuItem(icon = R.drawable.round_add_24, text = "Add To List") {
+            onMenuItemClicked(0)
+        }
+        InkMenuItem(icon = R.drawable.round_favorite_border_24, text = "Follow") {
+            onMenuItemClicked(1)
+        }
+        InkMenuItem(icon = R.drawable.round_share_24, text = "Share") {
+            onMenuItemClicked(2)
+        }
     }
 }
 
@@ -365,6 +408,7 @@ private fun Preview() = DefaultPreview {
             vol = { i -> if (i % 4 != 0) i % 4 else null },
             length = 16
         ),
+        followed = true,
         loading = false,
         headerPlaceholderImage = R.drawable.manga_placeholder
     )

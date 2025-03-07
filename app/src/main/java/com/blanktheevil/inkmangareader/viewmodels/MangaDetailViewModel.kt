@@ -11,6 +11,8 @@ import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class MangaDetailViewModel(
@@ -33,8 +35,23 @@ class MangaDetailViewModel(
         }
         params?.mangaId?.let { mangaId ->
             getMangaData(mangaId = mangaId, hardRefresh = hardRefresh)
+            getMangaFollowed(mangaId = mangaId)
             getMangaChapterFeed(mangaId = mangaId, hardRefresh = hardRefresh)
             getFirstChapter(mangaId = mangaId)
+        }
+    }
+
+    fun toggleFollowManga() = viewModelScope.launch(Dispatchers.IO) {
+        with (_uiState.value) {
+            if (!loading && manga != null) {
+                if (followed ) {
+                    mangaRepository.follow(manga.id)
+                } else {
+                    mangaRepository.unfollow(manga.id)
+                }.onSuccess {
+                    updateState { copy(followed = !followed) }
+                }
+            }
         }
     }
 
@@ -87,10 +104,25 @@ class MangaDetailViewModel(
         }
     }
 
+    private suspend fun getMangaFollowed(mangaId: String) = viewModelScope.launch(Dispatchers.IO) {
+        mangaRepository.getFollowing(mangaId = mangaId)
+            .onSuccess {
+                updateState { copy(
+                    followed = true
+                ) }
+            }
+            .onError {
+                updateState { copy(
+                    followed = false
+                ) }
+            }
+    }
+
     data class State(
         override val loading: Boolean = true,
         override val errors: List<Any> = emptyList(),
         val manga: Manga? = null,
+        val followed: Boolean = false,
         val chapterFeed: ChapterList = emptyDataList(),
         val firstChapter: LinkedChapter? = null,
     ): BaseViewModelState()
