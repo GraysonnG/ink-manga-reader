@@ -132,7 +132,7 @@ class ChapterRepositoryImpl(
         var chapterList = provider(auth)
         val mangaIds = chapterList.items.mapNotNull { it.relatedMangaId }.distinct()
 
-        if (auth != null) {
+        if (auth != null && mangaIds.isNotEmpty()) {
             val ids = mangaDexApi.getReadChapterIdsByMangaIds(
                 authorization = auth,
                 ids = mangaIds,
