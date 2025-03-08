@@ -37,7 +37,7 @@ class InkReaderManager(
 
     override fun setChapter(chapterId: String) {
         readerScope.launch {
-            val isChapterDownloaded = false // TODO: Download Manager Things
+            val isChapterDownloaded = downloadManager.isChapterDownloaded(chapterId)
 
             updateState { copy(
                 currentChapterId = chapterId,
@@ -115,7 +115,15 @@ class InkReaderManager(
         isDownloaded: Boolean,
     ) {
         if (isDownloaded) {
-
+            downloadManager.getChapterPages(chapterId)
+                .onSuccess { pages ->
+                    updateState { copy(
+                        currentChapterPagesLoaded = false,
+                        currentChapterPageUrls = pages,
+                        currentChapterPageLoaded = List(pages.size) { true }
+                            .toMutableList()
+                    ) }
+                }
         } else {
             chapterRepository
                 .getPages(chapterId, false) // TODO: SettingsManager stuff
@@ -267,9 +275,7 @@ class InkReaderManager(
                     if (result is SuccessResult && _state.value.readerType == ReaderType.PAGE) {
                         _state.value = _state.value.copy(
                             currentChapterPageLoaded = updatedList
-                                .also {
-                                    it[imageIndex] = true
-                                }
+                                .also { it[imageIndex] = true }
                         )
                     }
                 }
