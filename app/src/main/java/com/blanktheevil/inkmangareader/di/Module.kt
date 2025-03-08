@@ -2,6 +2,8 @@ package com.blanktheevil.inkmangareader.di
 
 import androidx.room.Room
 import com.blanktheevil.inkmangareader.adapters.JSONObjectAdapter
+import com.blanktheevil.inkmangareader.bookmark.BookmarkManager
+import com.blanktheevil.inkmangareader.bookmark.BookmarkManagerImpl
 import com.blanktheevil.inkmangareader.data.api.GithubApi
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
@@ -92,6 +94,7 @@ val appModule = module {
     singleOf(::DownloadManagerImpl) { bind<DownloadManager>() }
     singleOf(::SessionManager) { createdAtStart() }
     singleOf(::InkReaderManager) { bind<ReaderManager>() }
+    singleOf(::BookmarkManagerImpl) { bind<BookmarkManager>() }
 
     // daos
     single { get<InkDatabase>().mangaDao() }
@@ -99,6 +102,7 @@ val appModule = module {
     single { get<InkDatabase>().listDao() }
     single { get<InkDatabase>().modelStateDao() }
     single { get<InkDatabase>().downloadDao() }
+    single { get<InkDatabase>().bookmarkDao() }
 
     // repositories
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }

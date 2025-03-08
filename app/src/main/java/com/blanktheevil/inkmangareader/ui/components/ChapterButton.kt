@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.blanktheevil.inkmangareader.R
+import com.blanktheevil.inkmangareader.bookmark.BookmarkManager
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.ScanlationGroup
 import com.blanktheevil.inkmangareader.download.DownloadManager
@@ -62,6 +63,7 @@ import com.blanktheevil.inkmangareader.ui.theme.LocalContainerSwatch
 import com.blanktheevil.inkmangareader.ui.theme.LocalPrimarySwatch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -73,6 +75,7 @@ fun ColumnScope.ChapterButton(
         ActivityResultContracts.StartActivityForResult(),
         onResult = {}
     )
+    val bookmarkManager: BookmarkManager = koinInject()
     val downloadManager: DownloadManager = koinInject()
     val readerManager: ReaderManager = koinInject()
     var chapterDownloaded by remember { mutableStateOf(false) }
@@ -82,6 +85,9 @@ fun ColumnScope.ChapterButton(
     val isNew = remember(chapter.availableDate, chapter.isRead) {
         chapter.isNew
     }
+    val bookmarked by bookmarkManager.bookmarkState
+        .mapNotNull { it[chapter.relatedMangaId ?: "null"] == chapter.id }
+        .collectAsState(initial = false)
 
     suspend fun refreshIsDownloaded() {
         delay(100)
@@ -92,22 +98,38 @@ fun ColumnScope.ChapterButton(
         chapterDownloaded = downloadManager.isChapterDownloaded(chapter.id)
     }
 
-    if (isNew) {
-        val isNewString = stringResource(id = R.string.chapter_button_badge_new)
+    when {
+        bookmarked -> {
+            InkIcon(
+                modifier = Modifier
+                    .zIndex(2f)
+                    .offset(
+                        y = 6.dp.unaryMinus(),
+                        x = 6.dp.unaryMinus(),
+                    )
+                ,
+                resId = R.drawable.round_bookmark_24,
+                tint = LocalContainerSwatch.current.onColor,
+            )
+        }
 
-        Badge(
-            contentColor = LocalPrimarySwatch.current.onColor,
-            containerColor = LocalPrimarySwatch.current.color,
-            modifier = Modifier
-                .zIndex(2f)
-                .offset(
-                    y = 6.dp.unaryMinus(),
-                    x = 6.dp.unaryMinus(),
-                ),
-            content = {
-                Text(isNewString)
-            }
-        )
+        isNew -> {
+            val isNewString = stringResource(id = R.string.chapter_button_badge_new)
+
+            Badge(
+                contentColor = LocalPrimarySwatch.current.onColor,
+                containerColor = LocalPrimarySwatch.current.color,
+                modifier = Modifier
+                    .zIndex(2f)
+                    .offset(
+                        y = 6.dp.unaryMinus(),
+                        x = 6.dp.unaryMinus(),
+                    ),
+                content = {
+                    Text(isNewString)
+                }
+            )
+        }
     }
 
     Column {

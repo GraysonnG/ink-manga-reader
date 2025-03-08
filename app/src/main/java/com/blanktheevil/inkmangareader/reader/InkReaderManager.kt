@@ -5,6 +5,7 @@ import coil.executeBlocking
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.blanktheevil.inkmangareader.bookmark.BookmarkManager
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import com.blanktheevil.inkmangareader.data.repositories.mappers.currentChapter
@@ -28,6 +29,7 @@ class InkReaderManager(
     private val chapterRepository: ChapterRepository,
     private val mangaRepository: MangaRepository,
     private val downloadManager: DownloadManager,
+    private val bookmarkManager: BookmarkManager,
 ) : ReaderManager {
     private val readerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val _state = MutableStateFlow(ReaderManagerState())
@@ -52,6 +54,8 @@ class InkReaderManager(
                 getChapterDataJob,
                 getChapterPagesDataJob
             )
+
+            setBookmark()
 
             if (_state.value.currentChapterPageUrls.size == 1) {
                 markChapterRead(true)
@@ -224,6 +228,15 @@ class InkReaderManager(
                 mangaId = currentMangaId,
                 chapterId = currentChapterId,
                 isRead = isRead
+            )
+        }
+    }
+
+    private fun setBookmark() = with(_state.value) {
+        if (this.currentChapterId != null && this.mangaId != null) {
+            bookmarkManager.setBookmark(
+                mangaId,
+                currentChapterId
             )
         }
     }

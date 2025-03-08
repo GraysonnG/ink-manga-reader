@@ -25,15 +25,10 @@ class MangaDetailViewModel(
     override fun initViewModel(hardRefresh: Boolean, params: Params?): Job = viewModelScope.launch(
         Dispatchers.IO
     ) {
-        updateState {
-            if (hardRefresh) {
-                State()
-            } else {
-                copy(
-                    loading = true,
-                )
-            }
+        if (hardRefresh) {
+            updateState { State() }
         }
+
         params?.mangaId?.let { mangaId ->
             getMangaData(mangaId = mangaId, hardRefresh = hardRefresh)
             getMangaFollowed(mangaId = mangaId)
