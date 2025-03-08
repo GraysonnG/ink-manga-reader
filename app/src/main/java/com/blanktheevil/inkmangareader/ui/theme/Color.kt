@@ -31,13 +31,13 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val LocalPrimarySwatch = compositionLocalOf {
-    ColorSwatch(color = Color.Black, onColor = Color.White)
+    ColorSwatch(color = Color.Black, onColor = Color.White, rawColor = Color.Black, rawOnColor = Color.White)
 }
 val LocalContainerSwatch = compositionLocalOf {
-    ColorSwatch(color = Color.Black, onColor = Color.White)
+    ColorSwatch(color = Color.Black, onColor = Color.White, rawColor = Color.Black, rawOnColor = Color.White)
 }
 val LocalSurfaceSwatch = compositionLocalOf {
-    ColorSwatch(color = Color.Black, onColor = Color.White)
+    ColorSwatch(color = Color.Black, onColor = Color.White, rawColor = Color.Black, rawOnColor = Color.White)
 }
 
 fun Color.isDark(): Boolean {
@@ -147,6 +147,8 @@ val Palette?.primarySwatch: ColorSwatch
             label = "palette-on-primary",
             animationSpec = colorSwatchAnimationSpec,
         ).value,
+        rawColor = primary,
+        rawOnColor = onPrimary
     )
 
 val Palette?.containerSwatch: ColorSwatch
@@ -161,6 +163,8 @@ val Palette?.containerSwatch: ColorSwatch
             label = "palette-on-container",
             animationSpec = colorSwatchAnimationSpec,
         ).value,
+        rawColor = container,
+        rawOnColor = onContainer,
     )
 
 val Palette?.surfaceSwatch: ColorSwatch
@@ -175,24 +179,34 @@ val Palette?.surfaceSwatch: ColorSwatch
             label = "palette-on-surface",
             animationSpec = colorSwatchAnimationSpec,
         ).value,
+        rawColor = surface,
+        rawOnColor = onSurface
     )
 
 val ColorScheme.primarySwatch: ColorSwatch get() = ColorSwatch(
     color = primary,
     onColor = onPrimary,
+    rawColor = primary,
+    rawOnColor = onPrimary
 )
 
 val ColorScheme.containerSwatch: ColorSwatch get() = ColorSwatch(
     color = primaryContainer,
     onColor = onPrimaryContainer,
+    rawColor = primaryContainer,
+    rawOnColor = onPrimaryContainer,
 )
 
 val ColorScheme.surfaceSwatch: ColorSwatch get() = ColorSwatch(
     color = surface,
     onColor = onSurface,
+    rawColor = surface,
+    rawOnColor = onSurface,
 )
 
 data class ColorSwatch(
     val color: Color,
     val onColor: Color,
+    val rawColor: Color,
+    val rawOnColor: Color,
 )

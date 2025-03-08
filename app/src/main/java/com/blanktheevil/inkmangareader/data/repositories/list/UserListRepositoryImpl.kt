@@ -10,18 +10,16 @@ import com.blanktheevil.inkmangareader.data.dto.responses.GetUserListsResponse
 import com.blanktheevil.inkmangareader.data.repositories.makeAuthenticatedCall
 import com.blanktheevil.inkmangareader.data.repositories.makeCall
 
+/**
+ * # "listId"
+ */
+const val LIST_ID_EXTRA_KEY = "listId"
+const val LIST_OWNER_NAME_EXTRA_KEY = "username"
+
 class UserListRepositoryImpl(
     private val mangaDexApi: MangaDexApi,
     private val sessionManager: SessionManager,
 ) : UserListRepository {
-    companion object {
-        /**
-         * # "listId"
-         */
-        const val LIST_ID_EXTRA_KEY = "listId"
-        const val LIST_OWNER_NAME_EXTRA_KEY = "username"
-    }
-
     override suspend fun getLists(userId: String): Either<Map<String, DataList<String>>> =
         makeCall {
             mangaDexApi.getUserLists(id = userId).toMangaLists()

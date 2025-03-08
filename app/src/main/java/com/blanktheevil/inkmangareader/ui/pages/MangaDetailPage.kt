@@ -1,6 +1,7 @@
 package com.blanktheevil.inkmangareader.ui.pages
 
 import android.content.ClipData
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
@@ -34,9 +36,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,16 +58,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.blanktheevil.inkmangareader.R
+import com.blanktheevil.inkmangareader.data.DataList
+import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
+import com.blanktheevil.inkmangareader.data.repositories.list.LIST_OWNER_NAME_EXTRA_KEY
+import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
+import com.blanktheevil.inkmangareader.helpers.mutableStateOfFalse
+import com.blanktheevil.inkmangareader.helpers.rememberFalseState
 import com.blanktheevil.inkmangareader.reader.ReaderManager
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.LocalNavController
+import com.blanktheevil.inkmangareader.ui.components.ExpandableContentFab
 import com.blanktheevil.inkmangareader.ui.components.ImageHeader
 import com.blanktheevil.inkmangareader.ui.components.InkMenuItem
+import com.blanktheevil.inkmangareader.ui.components.LabeledCheckbox
 import com.blanktheevil.inkmangareader.ui.components.VolumesSkeleton
 import com.blanktheevil.inkmangareader.ui.components.volumeItems
 import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
@@ -78,7 +90,11 @@ import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.Params
 import com.blanktheevil.inkmangareader.viewmodels.MangaDetailViewModel.State
 import dev.jeziellago.compose.markdowntext.MarkdownText
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+
+private const val MENU_LIST = 0
+private const val MENU_SHARE = 1
 
 @Composable
 fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Params>(
@@ -104,9 +120,8 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
                 onBackButtonClicked = { nav.navigateUp() },
                 onMenuItemClicked = {
                     when(it) {
-                        0,
-                        1 -> {}
-                        2 -> {
+                        MENU_LIST -> {}
+                        MENU_SHARE -> {
                             val clipData = ClipData.newPlainText(manga.title, "https://mangadex.org/title/${manga.id}")
                             clipManager.setClip(ClipEntry(clipData))
                         }
@@ -117,9 +132,10 @@ fun MangaDetailPage(mangaId: String) = BasePage<MangaDetailViewModel, State, Par
                         readerManager.setChapter(it.id)
                     }
                 },
-                onFollowButtonClicked = {
-                    viewModel.toggleFollowManga()
-                }
+                onFollowButtonClicked = viewModel::toggleFollowManga,
+                getCustomLists = viewModel::getCurrentUserLists,
+                onAddToList = viewModel::addToList,
+                onRemoveFromList = viewModel::removeFromList,
             )
         }
     }
@@ -137,6 +153,9 @@ private fun MangaDetailLayout(
     onBackButtonClicked: () -> Unit = {},
     onMenuItemClicked: (Int) -> Unit = {},
     onFollowButtonClicked: () -> Unit = {},
+    getCustomLists: suspend () -> Map<String, DataList<String>> = { emptyMap() },
+    onAddToList: suspend (String, String) -> Either<Unit> = { _,_ -> Either.Null() },
+    onRemoveFromList: suspend (String, String) -> Either<Unit> = { _,_ -> Either.Null() },
 ) = Surface(
     color = LocalSurfaceSwatch.current.color,
     contentColor = LocalSurfaceSwatch.current.onColor,
@@ -144,11 +163,6 @@ private fun MangaDetailLayout(
     val headerHeight = LocalConfiguration.current.screenHeightDp.dp.times(0.5f)
     val volumes = remember(chapters) {
         chapters.items.groupBy { it.volume ?: "No Volume" }
-    }
-    val followButtonIcon = if (followed) {
-        R.drawable.round_favorite_24
-    } else {
-        R.drawable.round_favorite_border_24
     }
 
     Box {
@@ -200,25 +214,14 @@ private fun MangaDetailLayout(
             }
         }
 
-        Row(
-            modifier = Modifier
-                .padding(all = 8.dp)
-                .align(Alignment.BottomEnd)
-                .fillMaxWidth()
-            ,
-            horizontalArrangement = Arrangement.End,
-        ) {
-            FloatingActionButton(
-                onClick = onFollowButtonClicked,
-                containerColor = LocalPrimarySwatch.current.color,
-                contentColor = LocalPrimarySwatch.current.onColor,
-            ) {
-                InkIcon(
-                    modifier = Modifier.offset(y = 1.dp),
-                    resId = followButtonIcon
-                )
-            }
-        }
+        FABMenu(
+            manga = manga,
+            followed = followed,
+            onFollowButtonClicked = onFollowButtonClicked,
+            getCustomLists = getCustomLists,
+            onAddToList = onAddToList,
+            onRemoveFromList = onRemoveFromList,
+        )
     }
 }
 
@@ -299,6 +302,109 @@ private fun HeaderArea(
 }
 
 @Composable
+fun BoxScope.FABMenu(
+    manga: Manga,
+    followed: Boolean,
+    onFollowButtonClicked: () -> Unit,
+    onAddToList: suspend (String, String) -> Either<Unit>,
+    onRemoveFromList: suspend (String, String) -> Either<Unit>,
+    getCustomLists: suspend () -> Map<String, DataList<String>>
+) = Row(
+    modifier = Modifier
+        .padding(all = 8.dp)
+        .align(Alignment.BottomEnd)
+        .fillMaxWidth()
+    ,
+    horizontalArrangement = Arrangement.End,
+) {
+    var addToListFabExpanded by rememberFalseState()
+    val followButtonIcon = if (followed) {
+        R.drawable.round_favorite_24
+    } else {
+        R.drawable.round_favorite_border_24
+    }
+    var loadingCustomLists by rememberFalseState()
+    var customLists: Map<String, DataList<String>> by remember {
+        mutableStateOf(emptyMap())
+    }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(addToListFabExpanded) {
+        if (addToListFabExpanded && customLists.isEmpty()) {
+            loadingCustomLists = true
+            customLists = getCustomLists()
+            loadingCustomLists = false
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.End,
+    ) {
+        ExpandableContentFab(
+            shouldExpand = addToListFabExpanded,
+            collapsedContainerColor = LocalPrimarySwatch.current.rawColor,
+            collapsedContentColor = LocalPrimarySwatch.current.rawOnColor,
+            onClick = { addToListFabExpanded = !addToListFabExpanded },
+            icon = R.drawable.round_library_add_24
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Add to a list")
+                if (!loadingCustomLists) {
+                    // TODO: Fix issue where close and reopen after adding doesnt persist the list state
+                    customLists.entries.forEach { (listId, mangaIds) ->
+                        var checked by remember {
+                            mutableStateOf(manga.id in mangaIds.items)
+                        }
+
+                        LabeledCheckbox(
+                            text = mangaIds.title ?: "Custom List",
+                            checked = checked,
+                            onCheckedChange = { c ->
+                                coroutineScope.launch {
+                                    if (c) {
+                                        onAddToList(manga.id, listId)
+                                    } else {
+                                        onRemoveFromList(manga.id, listId)
+                                    }.onSuccess {
+                                        checked = c
+                                        // TODO: Temporary fix this is super stupid
+                                        customLists = getCustomLists()
+                                    }
+                                }
+                            }
+                        )
+                    }
+                } else {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
+        }
+
+        FloatingActionButton(
+            onClick = onFollowButtonClicked,
+            containerColor = LocalPrimarySwatch.current.color,
+            contentColor = LocalPrimarySwatch.current.onColor,
+        ) {
+            InkIcon(
+                modifier = Modifier.offset(y = 1.dp),
+                resId = followButtonIcon
+            )
+        }
+    }
+}
+
+@Composable
 fun DetailMenu(
     menuOpen: Boolean,
     onMenuItemClicked: (Int) -> Unit,
@@ -306,13 +412,10 @@ fun DetailMenu(
 ) {
     DropdownMenu(expanded = menuOpen, onDismissRequest = onDismissRequest) {
         InkMenuItem(icon = R.drawable.round_add_24, text = "Add To List") {
-            onMenuItemClicked(0)
-        }
-        InkMenuItem(icon = R.drawable.round_favorite_border_24, text = "Follow") {
-            onMenuItemClicked(1)
+            onMenuItemClicked(MENU_LIST)
         }
         InkMenuItem(icon = R.drawable.round_share_24, text = "Share") {
-            onMenuItemClicked(2)
+            onMenuItemClicked(MENU_SHARE)
         }
     }
 }

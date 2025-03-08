@@ -1,23 +1,24 @@
 package com.blanktheevil.inkmangareader.viewmodels
 
 import androidx.lifecycle.viewModelScope
+import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.emptyDataList
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.repositories.ChapterListRequest
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
+import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class MangaDetailViewModel(
     private val mangaRepository: MangaRepository,
     private val chapterRepository: ChapterRepository,
+    private val userListRepository: UserListRepository,
 ) : BaseViewModel<MangaDetailViewModel.State, MangaDetailViewModel.Params>(
     State()
 ) {
@@ -44,15 +45,27 @@ class MangaDetailViewModel(
     fun toggleFollowManga() = viewModelScope.launch(Dispatchers.IO) {
         with (_uiState.value) {
             if (!loading && manga != null) {
-                if (followed ) {
-                    mangaRepository.follow(manga.id)
-                } else {
+                if (followed) {
                     mangaRepository.unfollow(manga.id)
+                } else {
+                    mangaRepository.follow(manga.id)
                 }.onSuccess {
                     updateState { copy(followed = !followed) }
                 }
             }
         }
+    }
+
+    suspend fun getCurrentUserLists(): Map<String, DataList<String>> {
+        return userListRepository.getCurrentLists().successOrNull() ?: emptyMap()
+    }
+
+    suspend fun addToList(mangaId: String, listId: String): Either<Unit> {
+        return userListRepository.addMangaToList(mangaId, listId)
+    }
+
+    suspend fun removeFromList(mangaId: String, listId: String): Either<Unit> {
+        return userListRepository.removeMangaFromList(mangaId, listId)
     }
 
     private suspend fun getMangaData(mangaId: String, hardRefresh: Boolean) = viewModelScope.launch(

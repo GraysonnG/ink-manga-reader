@@ -94,7 +94,7 @@ private fun MangaItem(
             .aspectRatio(1f),
         painter = coverImage,
         contentDescription = null,
-        contentScale = ContentScale.FillWidth,
+        contentScale = ContentScale.Crop,
     )
     Spacer(modifier = Modifier.size(4.dp))
     Text(
