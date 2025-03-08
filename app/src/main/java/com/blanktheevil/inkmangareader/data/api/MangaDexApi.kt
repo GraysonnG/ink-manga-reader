@@ -76,7 +76,8 @@ interface MangaDexApi {
         @Query("authors[]") authors: List<String>? = null,
         @Query("artists[]") artists: List<String>? = null,
         @Query("year") year: String? = null,
-    ): GetMangaListResponse
+        @Query("hasAvailableChapters") hasAvailableChapters: Boolean = true,
+        ): GetMangaListResponse
 
     @GET("manga")
     suspend fun getMangaPopular(

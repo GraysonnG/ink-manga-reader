@@ -3,6 +3,7 @@ package com.blanktheevil.inkmangareader.viewmodels
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.blanktheevil.inkmangareader.data.Either
+import com.blanktheevil.inkmangareader.data.Sorting
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.error
 import com.blanktheevil.inkmangareader.data.filterEitherSuccess
@@ -12,10 +13,12 @@ import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.models.MangaList
+import com.blanktheevil.inkmangareader.data.models.Tag
 import com.blanktheevil.inkmangareader.data.onEitherError
 import com.blanktheevil.inkmangareader.data.onUniqueSession
 import com.blanktheevil.inkmangareader.data.repositories.ChapterListRequest
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
+import com.blanktheevil.inkmangareader.data.repositories.SearchParams
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
 import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
@@ -62,6 +65,34 @@ class DemoViewModel(
                         it.userListsLoading
 
             updateState { copy(loading = shouldBeLoading) }
+        }
+    }
+
+    fun filterPopularFeed(filter: Tag?) = viewModelScope.launch(
+        Dispatchers.IO
+    ) {
+        if (filter != null) {
+            mangaRepository.getList(
+                MangaListRequest.Search(
+                    SearchParams(
+                        search = null,
+                        order = Sorting.MAP["followsHigh"],
+                        includedTags = listOf(filter.id)
+                    )
+                ),
+                hardRefresh = true
+            )
+        } else {
+            mangaRepository.getList(
+                MangaListRequest.Popular,
+                hardRefresh = false
+            )
+        }.collect {
+            it.onSuccess { list ->
+                updateState { copy(
+                    popularList = list.copy(title = popularList?.title)
+                ) }
+            }
         }
     }
 

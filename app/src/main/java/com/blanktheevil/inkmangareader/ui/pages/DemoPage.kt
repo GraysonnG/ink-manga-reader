@@ -33,6 +33,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.blanktheevil.inkmangareader.BuildConfig
+import com.blanktheevil.inkmangareader.data.Tags
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.emptyDataList
 import com.blanktheevil.inkmangareader.helpers.rememberFalseState
@@ -41,6 +42,7 @@ import com.blanktheevil.inkmangareader.navigation.navigateToMangaDetail
 import com.blanktheevil.inkmangareader.navigation.navigateToMangaList
 import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.components.FeatureCarousel
+import com.blanktheevil.inkmangareader.ui.components.FilteredMangaShelf
 import com.blanktheevil.inkmangareader.ui.components.HomeHeader
 import com.blanktheevil.inkmangareader.ui.components.ImageHeader
 import com.blanktheevil.inkmangareader.ui.components.MangaFeed
@@ -53,7 +55,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
-fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.DemoParams> {_, uiState, authenticated ->
+fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.DemoParams> {viewModel, uiState, authenticated ->
     val sessionManager = koinInject<SessionManager>()
     val scope = rememberCoroutineScope()
     val nav = LocalNavController.current
@@ -137,13 +139,17 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
 
             uiState.popularList?.let {
                 item(key = "popular-feed") {
-                    MangaShelf(
+                    FilteredMangaShelf(
                         mangaList = it,
+                        filters = Tags.PopularFilters,
                         onRowLinkClicked = {
                             nav.navigateToMangaList(MangaListType.POPULAR)
+                        },
+                        onItemClicked = { mangaId ->
+                            nav.navigateToMangaDetail(mangaId = mangaId)
                         }
-                    ) { mangaId ->
-                        nav.navigateToMangaDetail(mangaId = mangaId)
+                    ) { tag ->
+                        viewModel.filterPopularFeed(tag)
                     }
                     Spacer(Modifier.size(16.dp))
                 }

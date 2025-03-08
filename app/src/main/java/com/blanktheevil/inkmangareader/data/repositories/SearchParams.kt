@@ -10,7 +10,7 @@ import com.squareup.moshi.JsonClass
 data class SearchParams(
     val limit: Int = 5,
     val offset: Int = 0,
-    val search: String,
+    val search: String?,
     val contentRating: ContentRatings = ContentFilter.DEFAULT_RATINGS,
     val order: Pair<String, String>? = Sorting.MAP.values.elementAt(1),
     val publicationDemographic: List<String>? = null,
