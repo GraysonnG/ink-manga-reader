@@ -2,7 +2,7 @@ package com.blanktheevil.inkmangareader.data.repositories
 
 import com.blanktheevil.inkmangareader.data.ContentFilter
 import com.blanktheevil.inkmangareader.data.ContentRatings
-import com.blanktheevil.inkmangareader.data.Sorting
+import com.blanktheevil.inkmangareader.data.Order
 import com.blanktheevil.inkmangareader.data.Tags
 import com.squareup.moshi.JsonClass
 
@@ -12,7 +12,7 @@ data class SearchParams(
     val offset: Int = 0,
     val search: String?,
     val contentRating: ContentRatings = ContentFilter.DEFAULT_RATINGS,
-    val order: Pair<String, String>? = Sorting.MAP.values.elementAt(1),
+    val order: Order,
     val publicationDemographic: List<String>? = null,
     val status: List<String>? = null,
     val includedTags: List<String>? = null,
@@ -22,4 +22,5 @@ data class SearchParams(
     val authors: List<String>? = null,
     val artists: List<String>? = null,
     val year: String? = null,
+    val createdAtSince: String? = null,
 )

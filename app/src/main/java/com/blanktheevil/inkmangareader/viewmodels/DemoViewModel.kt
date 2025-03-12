@@ -3,7 +3,7 @@ package com.blanktheevil.inkmangareader.viewmodels
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.blanktheevil.inkmangareader.data.Either
-import com.blanktheevil.inkmangareader.data.Sorting
+import com.blanktheevil.inkmangareader.data.Order
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.error
 import com.blanktheevil.inkmangareader.data.filterEitherSuccess
@@ -22,6 +22,7 @@ import com.blanktheevil.inkmangareader.data.repositories.SearchParams
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
 import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
+import com.blanktheevil.inkmangareader.helpers.getCreatedAtSinceString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -76,8 +77,9 @@ class DemoViewModel(
                 MangaListRequest.Search(
                     SearchParams(
                         search = null,
-                        order = Sorting.MAP["followsHigh"],
-                        includedTags = listOf(filter.id)
+                        order = Order.FollowsHigh,
+                        includedTags = listOf(filter.id),
+                        createdAtSince = getCreatedAtSinceString()
                     )
                 ),
                 hardRefresh = true

@@ -16,23 +16,40 @@ object ContentFilter {
     )
 }
 
-object Sorting {
-    val MAP = mapOf(
-        "none" to null,
-        "bestMatch" to ("relevance" to "desc"),
-        "latestUpload" to ("latestUploadedChapter" to "desc"),
-        "oldestUpload" to ("latestUploadedChapter" to "asc"),
-        "titleAsc" to ("title" to "asc"),
-        "titleDesc" to ("title" to "desc"),
-        "ratingHigh" to ("rating" to "desc"),
-        "ratingLow" to ("rating" to "asc"),
-        "followsHigh" to ("followedCount" to "desc"),
-        "followsLow" to ("followedCount" to "asc"),
-        "recentDesc" to ("createdAt" to "desc"),
-        "recentAsc" to ("createdAt" to "asc"),
-        "yearAsc" to ("year" to "asc"),
-        "yearDesc" to ("year" to "desc"),
-    )
+sealed class Order(val mapping: Pair<String, String>?) {
+    data object None : Order(mapping = null)
+    data object BestMatch : Order(mapping = "relevance" to "desc")
+    data object LatestUpload : Order(mapping = "latestUploadedChapter" to "desc")
+    data object OldestUpload : Order(mapping = "latestUploadedChapter" to "asc")
+    data object TitleAsc : Order(mapping = "title" to "asc")
+    data object TitleDesc : Order(mapping = "title" to "desc")
+    data object RatingHigh : Order(mapping = "rating" to "desc")
+    data object RatingLow : Order(mapping = "rating" to "asc")
+    data object FollowsHigh : Order(mapping = "followedCount" to "desc")
+    data object FollowsLow : Order(mapping = "followedCount" to "asc")
+    data object RecentDesc : Order(mapping = "createdAt" to "desc")
+    data object RecentAsc : Order(mapping = "createdAt" to "asc")
+    data object YearAsc : Order(mapping = "year" to "asc")
+    data object YearDesc : Order(mapping = "year" to "desc")
+
+    companion object {
+        val list = listOf(
+            None,
+            BestMatch,
+            LatestUpload,
+            OldestUpload,
+            TitleAsc,
+            TitleDesc,
+            RatingHigh,
+            RatingLow,
+            FollowsHigh,
+            FollowsLow,
+            RecentDesc,
+            RecentAsc,
+            YearAsc,
+            YearDesc
+        )
+    }
 }
 
 object Tags {
@@ -53,7 +70,6 @@ object Tags {
         Tag(id = "07251805-a27e-4d59-b488-f0bfbec15168", name = "Thriller", group = "genre"),
     )
 }
-
 
 typealias ContentRating = String
 typealias ContentRatings = List<ContentRating>

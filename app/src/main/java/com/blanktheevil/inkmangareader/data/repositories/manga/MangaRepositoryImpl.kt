@@ -3,7 +3,7 @@ package com.blanktheevil.inkmangareader.data.repositories.manga
 import android.util.Log
 import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
-import com.blanktheevil.inkmangareader.data.Sorting
+import com.blanktheevil.inkmangareader.data.Order
 import com.blanktheevil.inkmangareader.data.api.GithubApi
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
@@ -172,8 +172,9 @@ class MangaRepositoryImpl(
                         includedTagsMode = it.includedTagsMode,
                         limit = limit,
                         offset = offset,
-                        order = it.order.toOrder(),
+                        order = it.order.toApiValue(),
                         publicationDemographic = it.publicationDemographic,
+                        createdAtSince = it.createdAtSince,
                         status = it.status,
                         title = it.search,
                         year = it.year,
@@ -185,13 +186,13 @@ class MangaRepositoryImpl(
         }
     }
 
-    private fun Pair<String, String>?.toOrder(): Map<String, String> {
+    private fun Order?.toApiValue(): Map<String, String> {
         if (this == null) return emptyMap()
 
         val map = mutableMapOf<String, String>()
 
-        if (this != Sorting.MAP.values.elementAt(0)) {
-            map["order[$first]"] = second
+        if (this != Order.None && this.mapping != null) {
+            map["order[${mapping.first}]"] = mapping.second
         }
 
         return map
