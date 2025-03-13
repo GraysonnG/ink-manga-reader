@@ -383,8 +383,9 @@ fun BoxScope.FABMenu(
                     }
                 } else {
                     CircularProgressIndicator(
+                        strokeWidth = 2.dp,
                         modifier = Modifier
-                            .size(12.dp)
+                            .size(24.dp)
                             .align(Alignment.CenterHorizontally)
                     )
                 }

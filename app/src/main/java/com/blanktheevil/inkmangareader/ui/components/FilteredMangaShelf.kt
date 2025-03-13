@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,24 +49,20 @@ fun FilteredMangaShelf(
             contentPadding = PaddingValues(horizontal = 8.dp),
         ) {
             items(filters) {
-                val selected = selectedFilter?.id == it.id
+                val selected = remember(selectedFilter) {
+                    selectedFilter?.id == it.id
+                }
 
-                val colors = if (selected)
-                    ButtonDefaults.buttonColors()
-                else
-                    ButtonDefaults.outlinedButtonColors()
-
-
-                OutlinedButton(
-                    border = if (selected) null else ButtonDefaults.outlinedButtonBorder(enabled = true),
-                    colors = colors,
+                FilterChip(
+                    selected = selected,
                     onClick = {
                         selectedFilter = if (!selected) it else null
                         onFilterSelectionChanged(selectedFilter)
-                    }
-                ) {
-                    Text(it.name)
-                }
+                    },
+                    label = {
+                        Text(it.name)
+                    },
+                )
             }
         }
 
@@ -98,8 +95,6 @@ private fun FilteredMangaShelfPreview() = DefaultPreview {
         filters = Tags.PopularFilters,
         onRowLinkClicked = {},
         onItemClicked = {},
-        onFilterSelectionChanged = {
-
-        }
+        onFilterSelectionChanged = {}
     )
 }
