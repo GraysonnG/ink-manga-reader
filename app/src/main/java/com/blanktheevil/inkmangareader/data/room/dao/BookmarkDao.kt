@@ -12,7 +12,7 @@ interface BookmarkDao {
     suspend fun get(mangaId: String): BookmarkModel?
 
     @Query("SELECT * FROM BookmarkModel")
-    suspend fun getAll(): List<BookmarkModel>?
+    suspend fun getAll(): List<BookmarkModel>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(data: BookmarkModel)

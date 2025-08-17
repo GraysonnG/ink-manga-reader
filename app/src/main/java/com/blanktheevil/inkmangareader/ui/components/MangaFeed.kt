@@ -156,7 +156,7 @@ private fun Preview() = DefaultPreview {
     val mangaList = StubData.mangaList(length = 6)
     val chapterList = StubData.chapterList(length = 3)
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(64.dp)) {
         MangaFeed(mangaList.items.associateWith { chapterList.items }) {}
         MangaFeed(feed = emptyMap()) {}
     }

@@ -18,7 +18,7 @@ import com.blanktheevil.inkmangareader.download.room.DownloadModel
 
 @Database(
     version = 4,
-    exportSchema = true,
+    exportSchema = false,
     entities = [
         ChapterModel::class,
         DownloadModel::class,

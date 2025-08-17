@@ -13,13 +13,9 @@ class Converters {
     @TypeConverter
     fun mangaDataListToJson(
         value: DataList<Manga>
-    ): String {
-        val type = Types.newParameterizedType(DataList::class.java, Manga::class.java)
-
-        return moshi
-            .adapter<DataList<Manga>>(type)
-            .toJson(value)
-    }
+    ): String = Types
+        .newParameterizedType(DataList::class.java, Manga::class.java)
+        .let { moshi.adapter<DataList<Manga>>(it).toJson(value) }
 
     @TypeConverter
     fun jsonToMangaDataList(
