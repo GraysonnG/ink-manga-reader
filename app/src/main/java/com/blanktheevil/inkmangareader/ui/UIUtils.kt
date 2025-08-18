@@ -29,6 +29,7 @@ import coil.request.ImageRequest
 import coil.size.Scale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import java.util.Locale
 
 @Composable
 fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
@@ -129,4 +130,11 @@ fun String?.toAsyncPainterImage(
             Log.d("AsyncImage Error", it.result.throwable.message.toString())
         }
     )
+}
+
+fun String.cap(locale: Locale): String {
+    return this.replaceFirstChar {
+        if (it.isLowerCase()) it.titlecase(locale)
+        else it.toString()
+    }
 }

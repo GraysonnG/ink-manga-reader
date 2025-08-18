@@ -1,5 +1,6 @@
 package com.blanktheevil.inkmangareader.ui.sheets.search
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,16 +22,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.blanktheevil.inkmangareader.R
+import com.blanktheevil.inkmangareader.data.ContentFilter
+import com.blanktheevil.inkmangareader.data.Demographic
+import com.blanktheevil.inkmangareader.data.Order
+import com.blanktheevil.inkmangareader.data.Status
 import com.blanktheevil.inkmangareader.data.Tags
 import com.blanktheevil.inkmangareader.data.models.Tag
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
+import com.blanktheevil.inkmangareader.ui.components.HorizontalChipGroup
 import com.blanktheevil.inkmangareader.ui.components.TextInputField
 import com.blanktheevil.inkmangareader.ui.statusBarSize
+import okhttp3.internal.toImmutableList
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,8 +66,14 @@ fun SearchSheet(
         ) {
             SearchSheetContent(
                 tags = uiState.tags,
-                onTagChanged = {_,_->},
-                onTagModeChanged = {_,_->},
+                searchText = uiState.searchText,
+                onTextChanged = viewModel::onTextChanged,
+                onOrderChanged = viewModel::onOrderChanged,
+                onStatusChanged = viewModel::onStatusChanged,
+                onDemographicsChanged = viewModel::onDemographicsChanged,
+                onContentFiltersChanged = viewModel::onContentFiltersChanged,
+                onTagChanged = viewModel::onTagsChanged,
+                onTagModeChanged = viewModel::onTagModeChanged,
             )
         }
     }
@@ -70,6 +84,12 @@ private fun SearchSheetContent(
     initialIncludedTags: List<Tag> = emptyList(),
     initialExcludedTags: List<Tag> = emptyList(),
     tags: List<Tag>,
+    searchText: String,
+    onTextChanged: (newText: String) -> Unit,
+    onOrderChanged: (List<Order>) -> Unit,
+    onStatusChanged: (List<Status>) -> Unit,
+    onDemographicsChanged: (List<Demographic>) -> Unit,
+    onContentFiltersChanged: (List<ContentFilter>) -> Unit,
     onTagChanged: (included: List<Tag>, excluded: List<Tag>) -> Unit,
     onTagModeChanged: (included: Tags.Mode, excluded: Tags.Mode) -> Unit,
 ) = Box(
@@ -84,9 +104,9 @@ private fun SearchSheetContent(
     ) {
         TextInputField(
             modifier = Modifier.fillMaxWidth(),
-            value = "",
+            value = searchText,
             placeholder = "Search...",
-            onValueChange = {},
+            onValueChange = onTextChanged,
             trailingIcon = {
                 InkIcon(resId = R.drawable.round_search_24)
             },
@@ -102,16 +122,57 @@ private fun SearchSheetContent(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
                 .weight(1f)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             if (tags.isNotEmpty()) {
-                TagSelector(
-                    initialIncludedTags = initialIncludedTags,
-                    initialExcludedTags = initialExcludedTags,
-                    tags = tags,
-                    onTagChanged = onTagChanged,
-                    onTagModeChanged = onTagModeChanged,
+                HorizontalChipGroup(
+                    modifier = Modifier.padding(top = 16.dp),
+                    title = "Order by:",
+                    items = Order.list,
+                    selectedItems = listOf(Order.Relevant),
+                    onItemSelected = onOrderChanged,
+                    itemToString = { stringResource(it.nameRes) },
+                    selectionRequired = true,
                 )
+
+                HorizontalChipGroup(
+                    title = "Status:",
+                    items = Status.list,
+                    selectedItems = emptyList(),
+                    onItemSelected = onStatusChanged,
+                    itemToString = { stringResource(it.nameRes) },
+                    singleSelection = false,
+                )
+
+                HorizontalChipGroup(
+                    title = "Demographic:",
+                    items = Demographic.list,
+                    selectedItems = emptyList(),
+                    onItemSelected = onDemographicsChanged,
+                    itemToString = { stringResource(it.nameRes) },
+                    singleSelection = false,
+                )
+
+                HorizontalChipGroup(
+                    title = "Content Filter:",
+                    items = ContentFilter.list,
+                    selectedItems = ContentFilter.default_ratings,
+                    onItemSelected = onContentFiltersChanged,
+                    itemToString = { stringResource(it.nameRes) },
+                    singleSelection = false,
+                    selectionRequired = false,
+                )
+
+                Box {
+                    TagSelector(
+                        initialIncludedTags = initialIncludedTags,
+                        initialExcludedTags = initialExcludedTags,
+                        tags = tags,
+                        onTagChanged = onTagChanged,
+                        onTagModeChanged = onTagModeChanged,
+                    )
+                }
             } else {
                 CircularProgressIndicator(
                     modifier = Modifier
@@ -142,8 +203,14 @@ private fun Preview() = DefaultPreview {
             initialIncludedTags = listOf(tags[2]),
             initialExcludedTags = listOf(tags[18]),
             tags = tags,
+            searchText = "",
+            onTextChanged = {},
             onTagChanged = {_,_->},
             onTagModeChanged = {_,_->},
+            onOrderChanged = {},
+            onStatusChanged = {},
+            onDemographicsChanged = {},
+            onContentFiltersChanged = { _ -> }
         )
     }
 }
