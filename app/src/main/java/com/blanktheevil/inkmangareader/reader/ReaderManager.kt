@@ -4,7 +4,6 @@ import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
 import kotlinx.coroutines.flow.StateFlow
-import java.util.ArrayList
 
 interface ReaderManager {
     val state: StateFlow<ReaderManagerState>

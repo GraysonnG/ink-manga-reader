@@ -2,8 +2,6 @@ package com.blanktheevil.inkmangareader.ui.reader
 
 import android.os.Build
 import android.view.HapticFeedbackConstants
-import android.view.View
-import android.view.WindowInsets
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExitTransition
@@ -51,7 +49,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -59,8 +56,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.navigation.navigateToMangaDetail
 import com.blanktheevil.inkmangareader.reader.ReaderManager
@@ -73,8 +68,6 @@ import com.blanktheevil.inkmangareader.ui.navigationBarSize
 import com.blanktheevil.inkmangareader.ui.permanentNavigationBarSize
 import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
 import com.blanktheevil.inkmangareader.ui.showSystemBars
-import com.blanktheevil.inkmangareader.ui.smartSystemBars
-import com.blanktheevil.inkmangareader.ui.statusBarSize
 import com.blanktheevil.inkmangareader.ui.theme.springQuick
 import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 import kotlinx.coroutines.delay

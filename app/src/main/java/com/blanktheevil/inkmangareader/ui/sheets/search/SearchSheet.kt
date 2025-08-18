@@ -38,7 +38,6 @@ import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.components.HorizontalChipGroup
 import com.blanktheevil.inkmangareader.ui.components.TextInputField
 import com.blanktheevil.inkmangareader.ui.statusBarSize
-import okhttp3.internal.toImmutableList
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

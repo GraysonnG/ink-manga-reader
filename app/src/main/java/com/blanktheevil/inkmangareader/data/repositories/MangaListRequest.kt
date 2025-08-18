@@ -1,8 +1,5 @@
 package com.blanktheevil.inkmangareader.data.repositories
 
-import com.blanktheevil.inkmangareader.data.ContentRatings
-import com.blanktheevil.inkmangareader.data.Tags
-
 
 sealed class MangaListRequest(
     val type: String

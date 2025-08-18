@@ -1,7 +1,6 @@
 package com.blanktheevil.inkmangareader.ui.pages
 
 import android.content.ClipData
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -62,10 +61,7 @@ import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
-import com.blanktheevil.inkmangareader.data.repositories.list.LIST_OWNER_NAME_EXTRA_KEY
-import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
-import com.blanktheevil.inkmangareader.helpers.mutableStateOfFalse
 import com.blanktheevil.inkmangareader.helpers.rememberFalseState
 import com.blanktheevil.inkmangareader.reader.ReaderManager
 import com.blanktheevil.inkmangareader.stubs.StubData

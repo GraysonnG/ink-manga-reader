@@ -53,8 +53,8 @@ import com.blanktheevil.inkmangareader.ui.components.ImageHeader
 import com.blanktheevil.inkmangareader.ui.components.MangaCard
 import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
 import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel
-import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel.State
 import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel.Params
+import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel.State
 
 
 private const val HEADER_HEIGHT = 0.4f
