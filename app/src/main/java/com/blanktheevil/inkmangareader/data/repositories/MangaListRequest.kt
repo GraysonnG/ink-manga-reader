@@ -14,7 +14,7 @@ sealed class MangaListRequest(
     data class Follows(val userId: String) : MangaListRequest(type = "Follows-$userId")
     data class Search(
         val params: SearchParams,
-    ) : MangaListRequest(type = "Search")
+    ) : MangaListRequest(type = params.toString())
     data class UserList(
         val listId: String,
     ) : MangaListRequest(type = "UserList-$listId")

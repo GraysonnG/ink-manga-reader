@@ -8,6 +8,15 @@
     <string name="feature_carousel_item_read">Read</string>
     <string name="manga_feed_section_title">Your Updates</string>
     <string name="manga_feed_card_subtitle_zero">All caught up!</string>
+
+    <!--  Search Sheet  -->
+    <string name="search_placeholder">Search…</string>
+    <string name="search_button">Search</string>
+    <string name="filter_order">Order By:</string>
+    <string name="filter_status">Status:</string>
+    <string name="filter_demographic">Demographic:</string>
+    <string name="filter_content">Content Filter:</string>
+
     <string name="order_none">None</string>
     <string name="order_best_match">Best Match</string>
     <string name="order_latest_upload">Latest Upload</string>
@@ -22,16 +31,25 @@
     <string name="order_recent_descending">Oldest Added</string>
     <string name="order_year_ascending">Year Ascending</string>
     <string name="order_year_descending">Year Descending</string>
+
     <string name="status_ongoing">Ongoing</string>
     <string name="status_completed">Completed</string>
     <string name="status_hiatus">On Hiatus</string>
     <string name="status_cancelled">Cancelled</string>
+
     <string name="content_filter_safe">Safe</string>
     <string name="content_filter_suggestive">Suggestive</string>
     <string name="content_filter_erotica">Erotica</string>
     <string name="content_filter_nsfw">NSFW</string>
+
     <string name="demographic_shounen">Shounen</string>
     <string name="demographic_shoujo">Shoujo</string>
     <string name="demographic_seinen">Seinen</string>
     <string name="demographic_josei">Josei</string>
+
+    <string name="tag_mode_inclusion">Inclusion Mode</string>
+    <string name="tag_mode_exclusion">Exclusion Mode</string>
+    <string name="tag_mode_and">AND</string>
+    <string name="tag_mode_or">OR</string>
+    <string name="tag_category_other">Other</string>
 </resources>

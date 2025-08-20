@@ -4,6 +4,7 @@ import com.blanktheevil.inkmangareader.data.ContentFilter
 import com.blanktheevil.inkmangareader.data.ContentRatings
 import com.blanktheevil.inkmangareader.data.Order
 import com.blanktheevil.inkmangareader.data.Tags
+import com.blanktheevil.inkmangareader.data.models.Tag
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
@@ -15,8 +16,8 @@ data class SearchParams(
     val order: Order,
     val publicationDemographic: List<String>? = null,
     val status: List<String>? = null,
-    val includedTags: List<String>? = null,
-    val excludedTags: List<String>? = null,
+    val includedTags: List<Tag>? = null,
+    val excludedTags: List<Tag>? = null,
     val includedTagsMode: Tags.Mode? = null,
     val excludedTagsMode: Tags.Mode? = null,
     val authors: List<String>? = null,

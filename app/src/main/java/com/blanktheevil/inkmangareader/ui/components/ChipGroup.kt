@@ -96,7 +96,6 @@ fun <T> HorizontalChipGroup(
                             text = itemToString(item),
                             color = color,
                         )
-                        println(items)
                     }
                 )
             }

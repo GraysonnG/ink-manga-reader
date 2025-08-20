@@ -32,12 +32,15 @@ import com.blanktheevil.inkmangareader.data.Order
 import com.blanktheevil.inkmangareader.data.Status
 import com.blanktheevil.inkmangareader.data.Tags
 import com.blanktheevil.inkmangareader.data.models.Tag
+import com.blanktheevil.inkmangareader.navigation.navigateToMangaList
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
+import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.components.HorizontalChipGroup
 import com.blanktheevil.inkmangareader.ui.components.TextInputField
 import com.blanktheevil.inkmangareader.ui.statusBarSize
+import com.blanktheevil.inkmangareader.viewmodels.MangaListType
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,6 +48,7 @@ import org.koin.androidx.compose.koinViewModel
 fun SearchSheet(
     onDismissRequest: () -> Unit = {},
 ) = Column {
+    val nav = LocalNavController.current
     val viewModel = koinViewModel<SearchViewModel>()
     val uiState by viewModel.uiState.collectAsState()
     val state = rememberModalBottomSheetState(
@@ -55,35 +59,46 @@ fun SearchSheet(
         viewModel.initViewModel(false)
     }
 
-    if (!uiState.loading) {
-        ModalBottomSheet(
-            modifier = Modifier.fillMaxSize(),
-            onDismissRequest = onDismissRequest,
-            sheetState = state,
-            shape = RectangleShape,
-            dragHandle = null,
-        ) {
-            SearchSheetContent(
-                tags = uiState.tags,
-                searchText = uiState.searchText,
-                onTextChanged = viewModel::onTextChanged,
-                onOrderChanged = viewModel::onOrderChanged,
-                onStatusChanged = viewModel::onStatusChanged,
-                onDemographicsChanged = viewModel::onDemographicsChanged,
-                onContentFiltersChanged = viewModel::onContentFiltersChanged,
-                onTagChanged = viewModel::onTagsChanged,
-                onTagModeChanged = viewModel::onTagModeChanged,
-            )
-        }
+    ModalBottomSheet(
+        modifier = Modifier.fillMaxSize(),
+        onDismissRequest = {
+            onDismissRequest()
+            viewModel.onDismiss()
+        },
+        sheetState = state,
+        shape = RectangleShape,
+        dragHandle = null,
+    ) {
+        SearchSheetContent(
+            loading = uiState.loading,
+            tags = uiState.tags,
+            searchText = uiState.searchText,
+            onTextChanged = viewModel::onTextChanged,
+            onOrderChanged = viewModel::onOrderChanged,
+            onStatusChanged = viewModel::onStatusChanged,
+            onDemographicsChanged = viewModel::onDemographicsChanged,
+            onContentFiltersChanged = viewModel::onContentFiltersChanged,
+            onTagChanged = viewModel::onTagsChanged,
+            onTagModeChanged = viewModel::onTagModeChanged,
+            onSearch = {
+                nav.navigateToMangaList(
+                    MangaListType.SEARCH,
+                    mapOf(
+                        "searchParams" to viewModel.getSearchParamsString()
+                    )
+                )
+            }
+        )
     }
 }
 
 @Composable
 private fun SearchSheetContent(
-    initialIncludedTags: List<Tag> = emptyList(),
-    initialExcludedTags: List<Tag> = emptyList(),
+    loading: Boolean = false,
     tags: List<Tag>,
     searchText: String,
+    initialIncludedTags: List<Tag> = emptyList(),
+    initialExcludedTags: List<Tag> = emptyList(),
     onTextChanged: (newText: String) -> Unit,
     onOrderChanged: (List<Order>) -> Unit,
     onStatusChanged: (List<Status>) -> Unit,
@@ -91,10 +106,18 @@ private fun SearchSheetContent(
     onContentFiltersChanged: (List<ContentFilter>) -> Unit,
     onTagChanged: (included: List<Tag>, excluded: List<Tag>) -> Unit,
     onTagModeChanged: (included: Tags.Mode, excluded: Tags.Mode) -> Unit,
+    onSearch: () -> Unit,
 ) = Box(
     Modifier
         .fillMaxSize()
 ) {
+    val searchPlaceholder = stringResource(R.string.search_placeholder)
+    val searchButtonText = stringResource(R.string.search_button)
+    val filterOrderTitle = stringResource(R.string.filter_order)
+    val filterStatusTitle = stringResource(R.string.filter_status)
+    val filterDemographicTitle = stringResource(R.string.filter_demographic)
+    val filterContentTitle = stringResource(R.string.filter_content)
+
     Column(
         Modifier
             .fillMaxSize()
@@ -104,15 +127,13 @@ private fun SearchSheetContent(
         TextInputField(
             modifier = Modifier.fillMaxWidth(),
             value = searchText,
-            placeholder = "Search...",
+            placeholder = searchPlaceholder,
             onValueChange = onTextChanged,
             trailingIcon = {
                 InkIcon(resId = R.drawable.round_search_24)
             },
             keyboardActions = KeyboardActions(
-                onDone = {
-
-                }
+                onDone = { onSearch() }
             )
         )
 
@@ -121,57 +142,56 @@ private fun SearchSheetContent(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
                 .weight(1f)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 64.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            HorizontalChipGroup(
+                modifier = Modifier.padding(top = 16.dp),
+                title = filterOrderTitle,
+                items = Order.list,
+                selectedItems = listOf(Order.Relevant),
+                onItemSelected = onOrderChanged,
+                itemToString = { stringResource(it.nameRes) },
+                selectionRequired = true,
+            )
+
+            HorizontalChipGroup(
+                title = filterStatusTitle,
+                items = Status.list,
+                selectedItems = emptyList(),
+                onItemSelected = onStatusChanged,
+                itemToString = { stringResource(it.nameRes) },
+                singleSelection = false,
+            )
+
+            HorizontalChipGroup(
+                title = filterDemographicTitle,
+                items = Demographic.list,
+                selectedItems = emptyList(),
+                onItemSelected = onDemographicsChanged,
+                itemToString = { stringResource(it.nameRes) },
+                singleSelection = false,
+            )
+
+            HorizontalChipGroup(
+                title = filterContentTitle,
+                items = ContentFilter.list,
+                selectedItems = ContentFilter.default_ratings,
+                onItemSelected = onContentFiltersChanged,
+                itemToString = { stringResource(it.nameRes) },
+                singleSelection = false,
+                selectionRequired = false,
+            )
+
             if (tags.isNotEmpty()) {
-                HorizontalChipGroup(
-                    modifier = Modifier.padding(top = 16.dp),
-                    title = "Order by:",
-                    items = Order.list,
-                    selectedItems = listOf(Order.Relevant),
-                    onItemSelected = onOrderChanged,
-                    itemToString = { stringResource(it.nameRes) },
-                    selectionRequired = true,
+                TagSelector(
+                    initialIncludedTags = initialIncludedTags,
+                    initialExcludedTags = initialExcludedTags,
+                    tags = tags,
+                    onTagChanged = onTagChanged,
+                    onTagModeChanged = onTagModeChanged,
                 )
-
-                HorizontalChipGroup(
-                    title = "Status:",
-                    items = Status.list,
-                    selectedItems = emptyList(),
-                    onItemSelected = onStatusChanged,
-                    itemToString = { stringResource(it.nameRes) },
-                    singleSelection = false,
-                )
-
-                HorizontalChipGroup(
-                    title = "Demographic:",
-                    items = Demographic.list,
-                    selectedItems = emptyList(),
-                    onItemSelected = onDemographicsChanged,
-                    itemToString = { stringResource(it.nameRes) },
-                    singleSelection = false,
-                )
-
-                HorizontalChipGroup(
-                    title = "Content Filter:",
-                    items = ContentFilter.list,
-                    selectedItems = ContentFilter.default_ratings,
-                    onItemSelected = onContentFiltersChanged,
-                    itemToString = { stringResource(it.nameRes) },
-                    singleSelection = false,
-                    selectionRequired = false,
-                )
-
-                Box {
-                    TagSelector(
-                        initialIncludedTags = initialIncludedTags,
-                        initialExcludedTags = initialExcludedTags,
-                        tags = tags,
-                        onTagChanged = onTagChanged,
-                        onTagModeChanged = onTagModeChanged,
-                    )
-                }
             } else {
                 CircularProgressIndicator(
                     modifier = Modifier
@@ -186,9 +206,9 @@ private fun SearchSheetContent(
             .align(Alignment.BottomEnd)
             .padding(8.dp)
         ,
-        onClick = { /*TODO*/ }
+        onClick = onSearch
     ) {
-        Text("Search")
+        Text(searchButtonText)
     }
 }
 
@@ -209,7 +229,8 @@ private fun Preview() = DefaultPreview {
             onOrderChanged = {},
             onStatusChanged = {},
             onDemographicsChanged = {},
-            onContentFiltersChanged = { _ -> }
+            onContentFiltersChanged = { _ -> },
+            onSearch = {}
         )
     }
 }

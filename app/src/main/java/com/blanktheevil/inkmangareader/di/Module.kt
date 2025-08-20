@@ -2,8 +2,13 @@ package com.blanktheevil.inkmangareader.di
 
 import androidx.room.Room
 import com.blanktheevil.inkmangareader.adapters.JSONObjectAdapter
+import com.blanktheevil.inkmangareader.adapters.OrderAdapter
 import com.blanktheevil.inkmangareader.bookmark.BookmarkManager
 import com.blanktheevil.inkmangareader.bookmark.BookmarkManagerImpl
+import com.blanktheevil.inkmangareader.data.ContentFilter
+import com.blanktheevil.inkmangareader.data.Demographic
+import com.blanktheevil.inkmangareader.data.Order
+import com.blanktheevil.inkmangareader.data.Status
 import com.blanktheevil.inkmangareader.data.api.GithubApi
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
@@ -59,6 +64,7 @@ val appModule = module {
             .add(JSONObject::class.java, JSONObjectAdapter())
             .add(Date::class.java, Rfc3339DateJsonAdapter())
             .add(RelationshipList::class.java, RelationshipList.Adapter())
+            .add(Order::class.java, OrderAdapter())
             .build()
     }
 

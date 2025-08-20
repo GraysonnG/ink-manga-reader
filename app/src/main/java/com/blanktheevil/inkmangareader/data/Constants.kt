@@ -2,6 +2,8 @@ package com.blanktheevil.inkmangareader.data
 
 import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.data.models.Tag
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 
 const val DEFAULT_LIST_LIMIT = 20
 
@@ -17,6 +19,14 @@ sealed class ContentFilter(val nameRes: Int, val value: ContentRating) {
         }
         val default_ratings = listOf(Safe, Suggestive)
         val DEFAULT_RATINGS = default_ratings.map { it.value }
+
+        fun getContentFilterByValue(value: String): ContentFilter? = when (value) {
+            Safe.value -> Safe
+            Suggestive.value -> Suggestive
+            Erotica.value -> Erotica
+            Nsfw.value -> Nsfw
+            else -> null
+        }
     }
 }
 
@@ -59,14 +69,22 @@ sealed class Order(val nameRes: Int, val mapping: Pair<String, String>?) {
 }
 
 sealed class Status(val nameRes: Int, val value: String) {
-    data object Ongoing : Status(R.string.status_ongoing, "ONGOING")
-    data object Completed : Status(R.string.status_completed, "COMPLETED")
-    data object Hiatus : Status(R.string.status_hiatus, "HIATUS")
-    data object Cancelled : Status(R.string.status_cancelled, "CANCELLED")
+    data object Ongoing : Status(R.string.status_ongoing, "ongoing")
+    data object Completed : Status(R.string.status_completed, "completed")
+    data object Hiatus : Status(R.string.status_hiatus, "hiatus")
+    data object Cancelled : Status(R.string.status_cancelled, "cancelled")
 
     companion object {
         val list by lazy {
             listOf(Ongoing, Completed, Hiatus, Cancelled)
+        }
+
+        fun getStatusByValue(value: String): Status? = when (value) {
+            Ongoing.value -> Ongoing
+            Completed.value -> Completed
+            Hiatus.value -> Hiatus
+            Cancelled.value -> Cancelled
+            else -> null
         }
     }
 }
@@ -80,6 +98,14 @@ sealed class Demographic(val nameRes: Int, val value: String) {
     companion object {
         val list by lazy {
             listOf(Shounen, Shoujo, Seinen, Josei)
+        }
+
+        fun getDemographicByValue(value: String): Demographic? = when (value) {
+            Shounen.value -> Shounen
+            Shoujo.value -> Shoujo
+            Seinen.value -> Seinen
+            Josei.value -> Josei
+            else -> null
         }
     }
 }

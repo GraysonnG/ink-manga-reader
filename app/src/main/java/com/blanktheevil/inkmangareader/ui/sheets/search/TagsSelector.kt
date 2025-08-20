@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.blanktheevil.inkmangareader.R
@@ -67,9 +68,10 @@ fun TagSelector(
     onTagModeChanged: (included: Tags.Mode, excluded: Tags.Mode) -> Unit,
 ) {
     val locale = LocalConfiguration.current.locales[0]
+    val otherCategoryString = stringResource(R.string.tag_category_other)
     val categories = remember(tags) { tags.sortedBy {
         it.name.lowercase(locale)
-    }.groupBy { it.group ?: "Other Options" } }
+    }.groupBy { it.group ?: otherCategoryString } }
     var includedTags by remember { mutableStateOf(initialIncludedTags) }
     var includedTagMode by remember { mutableStateOf(Tags.Mode.AND) }
     var excludedTags by remember { mutableStateOf(initialExcludedTags) }
@@ -100,48 +102,14 @@ fun TagSelector(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         categories.forEach { (name, tags) ->
-            val selectedInCategory = remember(includedTags, excludedTags) {
-                tags.filter { it in includedTags || it in excludedTags }
-            }
-            var categoryOpen by remember { mutableStateOfFalse() }
-
-            Column {
-                CategoryTitle(
-                    name = name,
-                    locale = locale,
-                    categoryOpen = categoryOpen,
-                ) { categoryOpen = !categoryOpen }
-
-                SharedTransitionLayout {
-                    AnimatedContent (
-                        targetState = categoryOpen,
-                    ) { it ->
-                        when (it) {
-                            false -> SelectedTags(
-                                tags = selectedInCategory,
-                                includedTags = includedTags,
-                                excludedTags = excludedTags,
-                                onTagClicked = ::handleTagClicked,
-                                sharedTransitionScope = this@SharedTransitionLayout,
-                                animatedVisibilityScope = this@AnimatedContent,
-                            )
-                            true -> FlowRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Chips(
-                                    items = tags,
-                                    includedTags = includedTags,
-                                    excludedTags = excludedTags,
-                                    handleTagClicked = ::handleTagClicked,
-                                    sharedTransitionScope = this@SharedTransitionLayout,
-                                    animatedVisibilityScope = this@AnimatedContent,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            Category(
+                name = name,
+                tags = tags,
+                locale = locale,
+                includedTags = includedTags,
+                excludedTags = excludedTags,
+                handleTagClicked = ::handleTagClicked,
+            )
         }
 
         InclusionExclusion(
@@ -151,6 +119,54 @@ fun TagSelector(
             includedTagMode = include
             excludedTagMode = exclude
             onTagModeChanged(includedTagMode, excludedTagMode)
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun Category(
+    name: String,
+    tags: List<Tag>,
+    locale: Locale,
+    includedTags: List<Tag>,
+    excludedTags: List<Tag>,
+    handleTagClicked: (Tag) -> Unit,
+) {
+    val selectedInCategory = remember(includedTags, excludedTags) {
+        tags.filter { it in includedTags || it in excludedTags }
+    }
+    var categoryOpen by remember { mutableStateOfFalse() }
+
+    Column {
+        CategoryTitle(
+            name = name,
+            locale = locale,
+            categoryOpen = categoryOpen,
+        ) { categoryOpen = !categoryOpen }
+
+        SharedTransitionLayout {
+            AnimatedContent (
+                targetState = categoryOpen,
+            ) { isOpen -> if (isOpen) {
+                AllTags(
+                    tags = tags,
+                    includedTags = includedTags,
+                    excludedTags = excludedTags,
+                    handleTagClicked = handleTagClicked,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@AnimatedContent,
+                )
+            } else {
+                SelectedTags(
+                    tags = selectedInCategory,
+                    includedTags = includedTags,
+                    excludedTags = excludedTags,
+                    onTagClicked = handleTagClicked,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@AnimatedContent,
+                )
+            } }
         }
     }
 }
@@ -185,6 +201,29 @@ private fun CategoryTitle(
         painterResource(R.drawable.round_keyboard_arrow_down_24),
         modifier = Modifier.rotate(rotation),
         contentDescription = null
+    )
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun AllTags(
+    tags: List<Tag>,
+    includedTags: List<Tag>,
+    excludedTags: List<Tag>,
+    handleTagClicked: (Tag) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+) = FlowRow(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+) {
+    Chips(
+        items = tags,
+        includedTags = includedTags,
+        excludedTags = excludedTags,
+        handleTagClicked = handleTagClicked,
+        sharedTransitionScope = sharedTransitionScope,
+        animatedVisibilityScope = animatedVisibilityScope,
     )
 }
 
@@ -223,7 +262,7 @@ private fun SelectedTags(
     locale: Locale = LocalConfiguration.current.locales[0],
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-)  = with(sharedTransitionScope) {
+) {
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -243,7 +282,6 @@ private fun SelectedTags(
                 onTagClicked = onTagClicked,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedVisibilityScope = animatedVisibilityScope,
-
             )
         }
     }
@@ -304,6 +342,11 @@ private fun InclusionExclusion(
     excludeMode: Tags.Mode,
     onTagModeClicked: (Tags.Mode, Tags.Mode) -> Unit
 ) {
+    val inclusionModeString = stringResource(R.string.tag_mode_inclusion)
+    val exclusionModeString = stringResource(R.string.tag_mode_exclusion)
+    val andModeString = stringResource(R.string.tag_mode_and)
+    val orModeString = stringResource(R.string.tag_mode_or)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -312,14 +355,14 @@ private fun InclusionExclusion(
             Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Inclusion Mode")
+            Text(inclusionModeString)
             SingleChoiceSegmentedButtonRow {
                 SegmentedButton(
                     onClick = { onTagModeClicked(Tags.Mode.AND, excludeMode) },
                     shape = SegmentedButtonDefaults.itemShape(0, 2),
                     selected = includeMode == Tags.Mode.AND,
                 ) {
-                    Text("AND")
+                    Text(andModeString)
                 }
 
                 SegmentedButton(
@@ -327,7 +370,7 @@ private fun InclusionExclusion(
                     shape = SegmentedButtonDefaults.itemShape(1, 2),
                     selected = includeMode == Tags.Mode.OR,
                 ) {
-                    Text("OR")
+                    Text(orModeString)
                 }
             }
         }
@@ -335,14 +378,14 @@ private fun InclusionExclusion(
             Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Exclusion Mode")
+            Text(exclusionModeString)
             SingleChoiceSegmentedButtonRow {
                 SegmentedButton(
                     onClick = { onTagModeClicked(includeMode, Tags.Mode.AND) },
                     shape = SegmentedButtonDefaults.itemShape(0, 2),
                     selected = excludeMode == Tags.Mode.AND,
                 ) {
-                    Text("AND")
+                    Text(andModeString)
                 }
 
                 SegmentedButton(
@@ -350,7 +393,7 @@ private fun InclusionExclusion(
                     shape = SegmentedButtonDefaults.itemShape(1, 2),
                     selected = excludeMode == Tags.Mode.OR,
                 ) {
-                    Text("OR")
+                    Text(orModeString)
                 }
             }
         }

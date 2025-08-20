@@ -55,13 +55,25 @@ fun PrimaryNavGraph(
         }
 
         simpleComposable(
-            route = InkDestination.MangaList.declareArguments("typeOrId"),
+            route = InkDestination.MangaList.declareArguments("typeOrId", "extras"),
             arguments = listOf(
-                navArgument("typeOrId") { nullable = false }
+                navArgument("typeOrId") { nullable = false },
+                navArgument("extras") {
+                    nullable = true
+                    defaultValue = null
+                }
             )
         ) {
             val typeOrId = it.arguments?.getString("typeOrId") ?: return@simpleComposable
-            MangaListPage(typeOrId = typeOrId)
+            val extras = it.arguments?.getString("extras").takeIf { !it.isNullOrEmpty() }
+                ?.let { extrasString ->
+                    extrasString.split("|").associate {
+                        val (key, value) = it.split("=")
+                        key to value
+                    }
+                } ?: emptyMap()
+
+            MangaListPage(typeOrId = typeOrId, extras = extras)
         }
     }
 }
@@ -146,11 +158,15 @@ fun NavController.navigateToMangaDetail(mangaId: String, popUpToHome: Boolean = 
 }
 
 fun NavController.navigateToMangaList(
-    typeOrId: String
+    typeOrId: String,
+    extras: Map<String, String> = emptyMap()
 ) {
     navigate(
         route = InkDestination.MangaList.withArguments(
             "typeOrId" to typeOrId,
+            "extras" to extras.entries.joinToString(separator = "|") {
+                "${it.key}=${it.value}"
+            }
         )
     )
 }

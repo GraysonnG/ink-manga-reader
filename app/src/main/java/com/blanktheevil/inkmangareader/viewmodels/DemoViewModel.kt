@@ -79,7 +79,7 @@ class DemoViewModel(
                     SearchParams(
                         search = null,
                         order = Order.FollowsHigh,
-                        includedTags = listOf(filter.id),
+                        includedTags = listOf(filter),
                         createdAtSince = getCreatedAtSinceString()
                     )
                 ),

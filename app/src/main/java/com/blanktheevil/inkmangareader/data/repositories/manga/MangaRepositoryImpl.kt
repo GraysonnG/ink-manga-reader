@@ -166,9 +166,9 @@ class MangaRepositoryImpl(
                         artists = it.artists,
                         authors = it.authors,
                         contentRating = it.contentRating,
-                        excludedTags = it.excludedTags,
+                        excludedTags = it.excludedTags?.map { it.id },
                         excludedTagsMode = it.excludedTagsMode,
-                        includedTags = it.includedTags,
+                        includedTags = it.includedTags?.map { it.id },
                         includedTagsMode = it.includedTagsMode,
                         limit = limit,
                         offset = offset,
@@ -178,7 +178,7 @@ class MangaRepositoryImpl(
                         status = it.status,
                         title = it.search,
                         year = it.year,
-                    ).toMangaList()
+                    ).toMangaList(title = "Search")
                 }
             }
 

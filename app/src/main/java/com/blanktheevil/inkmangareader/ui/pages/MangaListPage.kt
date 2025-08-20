@@ -1,12 +1,14 @@
 package com.blanktheevil.inkmangareader.ui.pages
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +23,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
@@ -39,16 +42,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.blanktheevil.inkmangareader.R
+import com.blanktheevil.inkmangareader.data.ContentFilter
+import com.blanktheevil.inkmangareader.data.Demographic
+import com.blanktheevil.inkmangareader.data.Order
+import com.blanktheevil.inkmangareader.data.Status
+import com.blanktheevil.inkmangareader.data.Tags
+import com.blanktheevil.inkmangareader.data.repositories.SearchParams
 import com.blanktheevil.inkmangareader.navigation.navigateToMangaDetail
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.LocalNavController
+import com.blanktheevil.inkmangareader.ui.cap
 import com.blanktheevil.inkmangareader.ui.components.ImageHeader
 import com.blanktheevil.inkmangareader.ui.components.MangaCard
 import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
@@ -56,12 +67,14 @@ import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel.Params
 import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel.State
 
-
 private const val HEADER_HEIGHT = 0.4f
 
 @Composable
-fun MangaListPage(typeOrId: String) = BasePage<MangaListViewModel, State, Params>(
-    viewModelParams = Params(typeOrId = typeOrId)
+fun MangaListPage(
+    typeOrId: String,
+    extras: Map<String, String> = emptyMap(),
+) = BasePage<MangaListViewModel, State, Params>(
+    viewModelParams = Params(typeOrId = typeOrId, extras = extras)
 ) { vm, uiState, _ ->
     val nav = LocalNavController.current
 
@@ -192,6 +205,7 @@ private fun HeaderArea(
                         .coerceIn(0f, 1f)
                 ),
                 title = title,
+                searchParams = uiState.searchParams,
                 username = uiState.list.extras?.get("username")
             )
         }
@@ -202,6 +216,7 @@ private fun HeaderArea(
 private fun BoxScope.TitleDetailContent(
     title: String,
     username: String?,
+    searchParams: SearchParams?,
     modifier: Modifier = Modifier,
 ) = Column(
     modifier = modifier
@@ -210,7 +225,7 @@ private fun BoxScope.TitleDetailContent(
         .align(Alignment.BottomStart),
 ) {
     Text(
-        text = title,
+        text = title + (searchParams?.search?.let { ": $it" } ?: ""),
         style = MaterialTheme.typography.headlineLarge
     )
 
@@ -219,6 +234,104 @@ private fun BoxScope.TitleDetailContent(
             text = "By: $username",
             color = LocalContentColor.current.copy(alpha = 0.70f),
             style = MaterialTheme.typography.labelMedium,
+        )
+    }
+
+    if (searchParams != null) {
+        val sortOrder = stringResource(searchParams.order.nameRes)
+
+        val tags = listOf(
+            *(searchParams.includedTags ?: emptyList()).toTypedArray(),
+            *(searchParams.excludedTags ?: emptyList()).toTypedArray(),
+        )
+
+        Text(
+            text = "Filters:",
+            color = LocalContentColor.current.copy(alpha = 0.70f),
+            style = MaterialTheme.typography.labelMedium,
+        )
+
+        FlowRow(
+            modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Badge(
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                InkIcon(
+                    resId = R.drawable.sort_24,
+                    modifier = Modifier.padding(end = 2.dp).size(14.dp),
+                )
+                Text(text = sortOrder)
+            }
+
+            searchParams.status?.BadgeRow(
+                resId = R.drawable.round_publish_24,
+                defaultText = "Unknown Status",
+            ) {
+                Status.getStatusByValue(it)?.nameRes
+            }
+
+            searchParams.publicationDemographic?.BadgeRow(
+                resId = R.drawable.person_24,
+                defaultText = "Unknown Demographic",
+            ) {
+                Demographic.getDemographicByValue(it)?.nameRes
+            }
+
+            searchParams.contentRating.BadgeRow(
+                resId = R.drawable.round_filter_24,
+                defaultText = "Unknown Content Rating",
+            ) { contentRatingValue ->
+                ContentFilter.getContentFilterByValue(contentRatingValue)?.nameRes
+            }
+        }
+
+        if (tags.isNotEmpty()) {
+            Text(
+                text = "Tags:",
+                color = LocalContentColor.current.copy(alpha = 0.70f),
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                tags.forEach { tag ->
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Text(text = tag.name)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun List<String>.BadgeRow(
+    modifier: Modifier = Modifier,
+    resId: Int,
+    defaultText: String,
+    getString: (String) -> Int?,
+) = this.forEach {
+    Badge(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.primary
+    ) {
+        InkIcon(
+            resId = resId,
+            modifier = Modifier.padding(end = 2.dp).size(14.dp),
+        )
+        Text(
+            text = getString(it)?.let { resId ->
+                stringResource(resId)
+            } ?: defaultText
         )
     }
 }
@@ -283,9 +396,20 @@ private fun Preview() = DefaultPreview {
         uiState = State(
             list = StubData.mangaList(
                 length = 12,
-                extras = mapOf("username" to "Test User")
+//                extras = mapOf("username" to "Test User")
             ),
             loading = false,
+            searchParams = SearchParams(
+                search = "Search String",
+                contentRating = ContentFilter.list.map { it.value },
+                order = Order.Relevant,
+                publicationDemographic = Demographic.list.map { it.value },
+                status = Status.list.map { it.value },
+                includedTags = Tags.PopularFilters,
+                excludedTags = emptyList(),
+                includedTagsMode = Tags.Mode.AND,
+                excludedTagsMode = Tags.Mode.OR,
+            )
         ),
         mangaPlaceholderRes = R.drawable.manga_placeholder,
         onBackButtonClicked = {},

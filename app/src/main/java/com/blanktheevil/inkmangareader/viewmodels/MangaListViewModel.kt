@@ -7,13 +7,16 @@ import com.blanktheevil.inkmangareader.data.emptyDataList
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.models.MangaList
 import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
+import com.blanktheevil.inkmangareader.data.repositories.SearchParams
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import com.blanktheevil.inkmangareader.helpers.isUUID
+import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MangaListViewModel(
     private val mangaRepository: MangaRepository,
+    private val moshi: Moshi,
 ) : BaseViewModel<MangaListViewModel.State, MangaListViewModel.Params>(State()) {
     companion object {
         private const val CHUNK_SIZE = 32
@@ -24,7 +27,7 @@ class MangaListViewModel(
     override fun initViewModel(hardRefresh: Boolean, params: Params?) = viewModelScope.launch(Dispatchers.IO) {
         params?.let {
             updateState { copy(loading = true) }
-            mangaListRequest = getListRequestFromTypeOrId(it.typeOrId)
+            mangaListRequest = getListRequestFromTypeOrId(it.typeOrId, it.extras)
 
             launch {
                 mangaRepository.getList(
@@ -84,9 +87,20 @@ class MangaListViewModel(
         extras = this.extras?.plus(other.extras ?: emptyMap()),
     )
 
-    private fun getListRequestFromTypeOrId(typeOrId: String) = when (typeOrId) {
+    private fun getListRequestFromTypeOrId(typeOrId: String, extras: Map<String, String>) = when (typeOrId) {
         MangaListType.POPULAR -> MangaListRequest.Popular
         MangaListType.RECENT -> MangaListRequest.Recent
+        MangaListType.SEARCH -> {
+            val searchParams = extras["searchParams"]?.let { data ->
+                moshi.adapter(SearchParams::class.java).fromJson(
+                    data
+                )
+            } ?: throw IllegalArgumentException("Search parameters are required for SEARCH type")
+
+            updateState { copy(searchParams = searchParams) }
+
+            MangaListRequest.Search(params = searchParams)
+        }
         else -> {
             if (typeOrId.isUUID()) {
                 MangaListRequest.UserList(typeOrId)
@@ -100,16 +114,19 @@ class MangaListViewModel(
         override val loading: Boolean = true,
         override val errors: List<Any> = emptyList(),
         val list: MangaList = emptyDataList(),
+        val searchParams: SearchParams? = null,
         val loadingMore: Boolean = false,
         val offset: Int = 0,
     ) : BaseViewModelState()
 
     data class Params(
-        val typeOrId: String
+        val typeOrId: String,
+        val extras: Map<String, String>,
     )
 }
 
 object MangaListType {
     const val POPULAR = "POPULAR"
     const val RECENT = "RECENT"
+    const val SEARCH = "SEARCH"
 }

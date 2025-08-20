@@ -1,5 +1,6 @@
 package com.blanktheevil.inkmangareader.ui.sheets.search
 
+import androidx.compose.ui.text.toLowerCase
 import androidx.lifecycle.viewModelScope
 import com.blanktheevil.inkmangareader.data.ContentFilter
 import com.blanktheevil.inkmangareader.data.ContentRatings
@@ -14,6 +15,7 @@ import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import com.blanktheevil.inkmangareader.data.repositories.tags.TagsRepository
 import com.blanktheevil.inkmangareader.viewmodels.BaseViewModel
 import com.blanktheevil.inkmangareader.viewmodels.BaseViewModelState
+import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -21,12 +23,18 @@ import kotlinx.coroutines.launch
 class SearchViewModel(
     private val tagsRepository: TagsRepository,
     private val mangaRepository: MangaRepository,
+    private val moshi: Moshi,
 ) : BaseViewModel<SearchState, Nothing>(SearchState()) {
     override fun initViewModel(
         hardRefresh: Boolean,
         params: Nothing?,
     ): Job = viewModelScope.launch {
         getTags()
+        updateState { SearchState() }
+    }
+
+    fun onDismiss() {
+        updateState { SearchState() }
     }
 
     fun onTextChanged(newText: String) {
@@ -75,25 +83,26 @@ class SearchViewModel(
         ) }
     }
 
-    fun submit() {
-        with (uiState.value) {
-            val params = SearchParams(
-                search = this.searchText,
-                contentRating = this.contentFilters,
-                order = order,
-                publicationDemographic = demographics.map { it.value },
-                status = status.map { it.value },
-                includedTags = includedTags.map { it.id },
-                excludedTags = excludedTags.map { it.id },
-                includedTagsMode = includedTagMode,
-                excludedTagsMode = excludedTagMode,
-            )
-
-            val request = MangaListRequest.Search(
-                params = params,
-            )
+    fun getSearchParamsString(): String = with (uiState.value) {
+        val params = SearchParams(
+            search = this.searchText,
+            contentRating = this.contentFilters,
+            order = order,
+            publicationDemographic = demographics.map { it.value },
+            status = status.map { it.value },
+            includedTags = includedTags,
+            excludedTags = excludedTags,
+            includedTagsMode = includedTagMode,
+            excludedTagsMode = excludedTagMode,
+        )
+        // prefetch the search results before navigating to the list page
+        viewModelScope.launch {
+            mangaRepository.getList(MangaListRequest.Search(params), hardRefresh = true)
         }
+
+        moshi.adapter(SearchParams::class.java).toJson(params)
     }
+
 
     private fun getTags() = viewModelScope.launch(
         Dispatchers.IO
