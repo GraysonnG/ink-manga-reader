@@ -72,6 +72,7 @@ fun SearchSheet(
         SearchSheetContent(
             loading = uiState.loading,
             tags = uiState.tags,
+            initialContentFilters = uiState.initialContentFilters,
             searchText = uiState.searchText,
             onTextChanged = viewModel::onTextChanged,
             onOrderChanged = viewModel::onOrderChanged,
@@ -96,6 +97,7 @@ fun SearchSheet(
 private fun SearchSheetContent(
     loading: Boolean = false,
     tags: List<Tag>,
+    initialContentFilters: List<ContentFilter>,
     searchText: String,
     initialIncludedTags: List<Tag> = emptyList(),
     initialExcludedTags: List<Tag> = emptyList(),
@@ -177,7 +179,7 @@ private fun SearchSheetContent(
             HorizontalChipGroup(
                 title = filterContentTitle,
                 items = ContentFilter.list,
-                selectedItems = ContentFilter.default_ratings,
+                selectedItems = initialContentFilters,
                 onItemSelected = onContentFiltersChanged,
                 itemToString = { stringResource(it.nameRes) },
                 singleSelection = false,
@@ -219,6 +221,7 @@ private fun Preview() = DefaultPreview {
 
     Box(modifier = Modifier.fillMaxSize()) {
         SearchSheetContent(
+            initialContentFilters = ContentFilter.default_ratings,
             initialIncludedTags = listOf(tags[2]),
             initialExcludedTags = listOf(tags[18]),
             tags = tags,

@@ -62,6 +62,7 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
     val columnState = rememberLazyListState()
     var searchSheetOpen by rememberFalseState()
     var loginSheetOpen by rememberFalseState()
+    var settingsSheetOpen by rememberFalseState()
     val headerHeight = LocalConfiguration.current.screenHeightDp.dp.times(0.5f)
     var featureEnabled by rememberTrueState()
 
@@ -199,7 +200,6 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
                             )
-
                         }
                     }
                 }
@@ -234,5 +234,9 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
         LoginSheet {
             loginSheetOpen = false
         }
+    }
+
+    if (settingsSheetOpen) {
+        // SettingsSheet()
     }
 }

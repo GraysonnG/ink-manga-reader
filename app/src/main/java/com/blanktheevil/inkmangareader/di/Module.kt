@@ -31,6 +31,8 @@ import com.blanktheevil.inkmangareader.download.DownloadManager
 import com.blanktheevil.inkmangareader.download.DownloadManagerImpl
 import com.blanktheevil.inkmangareader.reader.InkReaderManager
 import com.blanktheevil.inkmangareader.reader.ReaderManager
+import com.blanktheevil.inkmangareader.settings.SettingsManager
+import com.blanktheevil.inkmangareader.settings.SettingsManagerImpl
 import com.blanktheevil.inkmangareader.ui.sheets.login.LoginViewModel
 import com.blanktheevil.inkmangareader.ui.sheets.search.SearchViewModel
 import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
@@ -101,6 +103,7 @@ val appModule = module {
     singleOf(::SessionManager) { createdAtStart() }
     singleOf(::InkReaderManager) { bind<ReaderManager>() }
     singleOf(::BookmarkManagerImpl) { bind<BookmarkManager>() }
+    singleOf(::SettingsManagerImpl) { bind<SettingsManager>() }
 
     // daos
     single { get<InkDatabase>().mangaDao() }
@@ -109,6 +112,7 @@ val appModule = module {
     single { get<InkDatabase>().modelStateDao() }
     single { get<InkDatabase>().downloadDao() }
     single { get<InkDatabase>().bookmarkDao() }
+    single { get<InkDatabase>().settingsDao() }
 
     // repositories
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }

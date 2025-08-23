@@ -12,6 +12,8 @@ import com.blanktheevil.inkmangareader.data.repositories.mappers.currentChapter
 import com.blanktheevil.inkmangareader.data.repositories.mappers.nextChapter
 import com.blanktheevil.inkmangareader.data.repositories.mappers.prevChapter
 import com.blanktheevil.inkmangareader.download.DownloadManager
+import com.blanktheevil.inkmangareader.helpers.orFalse
+import com.blanktheevil.inkmangareader.settings.SettingsManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class InkReaderManager(
@@ -30,6 +33,7 @@ class InkReaderManager(
     private val mangaRepository: MangaRepository,
     private val downloadManager: DownloadManager,
     private val bookmarkManager: BookmarkManager,
+    private val settingsManager: SettingsManager,
 ) : ReaderManager {
     private val readerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val _state = MutableStateFlow(ReaderManagerState())
@@ -125,8 +129,10 @@ class InkReaderManager(
                     ) }
                 }
         } else {
+            val dataSaver = settingsManager.settingsState.firstOrNull()?.dataSaver.orFalse()
+
             chapterRepository
-                .getPages(chapterId, false) // TODO: SettingsManager stuff
+                .getPages(chapterId, dataSaver)
                 .onSuccess { pages ->
                     updateState { copy(
                         currentChapterPagesLoaded = false,

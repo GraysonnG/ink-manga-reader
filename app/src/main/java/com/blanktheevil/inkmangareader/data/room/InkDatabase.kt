@@ -7,17 +7,19 @@ import com.blanktheevil.inkmangareader.data.room.dao.BookmarkDao
 import com.blanktheevil.inkmangareader.data.room.dao.ChapterDao
 import com.blanktheevil.inkmangareader.data.room.dao.ListDao
 import com.blanktheevil.inkmangareader.data.room.dao.MangaDao
+import com.blanktheevil.inkmangareader.data.room.dao.SettingsDao
 import com.blanktheevil.inkmangareader.data.room.models.BookmarkModel
 import com.blanktheevil.inkmangareader.data.room.models.ChapterModel
 import com.blanktheevil.inkmangareader.data.room.models.ListModel
 import com.blanktheevil.inkmangareader.data.room.models.MangaModel
+import com.blanktheevil.inkmangareader.data.room.models.SettingsModel
 import com.blanktheevil.inkmangareader.data.room.temp.ModelStateDao
 import com.blanktheevil.inkmangareader.data.room.temp.ModelStateModel
 import com.blanktheevil.inkmangareader.download.room.DownloadDao
 import com.blanktheevil.inkmangareader.download.room.DownloadModel
 
 @Database(
-    version = 4,
+    version = 5,
     exportSchema = false,
     entities = [
         ChapterModel::class,
@@ -26,6 +28,7 @@ import com.blanktheevil.inkmangareader.download.room.DownloadModel
         MangaModel::class,
         ModelStateModel::class,
         BookmarkModel::class,
+        SettingsModel::class,
     ],
 )
 @TypeConverters(Converters::class)
@@ -36,6 +39,7 @@ abstract class InkDatabase : RoomDatabase() {
     abstract fun modelStateDao(): ModelStateDao
     abstract fun downloadDao(): DownloadDao
     abstract fun bookmarkDao(): BookmarkDao
+    abstract fun settingsDao(): SettingsDao
 
     companion object {
         const val NAME = "ink-database-v2"

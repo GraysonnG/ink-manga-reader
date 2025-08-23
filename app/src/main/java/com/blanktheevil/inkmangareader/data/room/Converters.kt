@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.Manga
+import com.blanktheevil.inkmangareader.settings.SettingsState
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 
@@ -25,6 +26,24 @@ class Converters {
 
         return moshi
             .adapter<DataList<Manga>?>(type)
+            .fromJson(value)
+    }
+
+    @TypeConverter
+    fun settingsToJson(
+        value: SettingsState,
+    ): String {
+        return moshi
+            .adapter(SettingsState::class.java)
+            .toJson(value)
+    }
+
+    @TypeConverter
+    fun jsonToSettings(
+        value: String,
+    ): SettingsState? {
+        return moshi
+            .adapter(SettingsState::class.java)
             .fromJson(value)
     }
 

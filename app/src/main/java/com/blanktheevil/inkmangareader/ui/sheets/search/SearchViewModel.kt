@@ -1,6 +1,5 @@
 package com.blanktheevil.inkmangareader.ui.sheets.search
 
-import androidx.compose.ui.text.toLowerCase
 import androidx.lifecycle.viewModelScope
 import com.blanktheevil.inkmangareader.data.ContentFilter
 import com.blanktheevil.inkmangareader.data.ContentRatings
@@ -13,24 +12,36 @@ import com.blanktheevil.inkmangareader.data.repositories.MangaListRequest
 import com.blanktheevil.inkmangareader.data.repositories.SearchParams
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import com.blanktheevil.inkmangareader.data.repositories.tags.TagsRepository
+import com.blanktheevil.inkmangareader.settings.SettingsManager
 import com.blanktheevil.inkmangareader.viewmodels.BaseViewModel
 import com.blanktheevil.inkmangareader.viewmodels.BaseViewModelState
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
     private val tagsRepository: TagsRepository,
     private val mangaRepository: MangaRepository,
     private val moshi: Moshi,
+    private val settingsManager: SettingsManager,
 ) : BaseViewModel<SearchState, Nothing>(SearchState()) {
     override fun initViewModel(
         hardRefresh: Boolean,
         params: Nothing?,
     ): Job = viewModelScope.launch {
         getTags()
-        updateState { SearchState() }
+
+        val initialContentFilters = settingsManager.settingsState.firstOrNull()?.contentFilter?.mapNotNull {
+            ContentFilter.getContentFilterByValue(it)
+        } ?: ContentFilter.default_ratings
+
+        updateState {
+            SearchState(
+                initialContentFilters = initialContentFilters
+            )
+        }
     }
 
     fun onDismiss() {
@@ -120,6 +131,7 @@ data class SearchState(
     override val loading: Boolean = true,
     override val errors: List<Any> = emptyList(),
     val tags: List<Tag> = emptyList(),
+    val initialContentFilters: List<ContentFilter> = ContentFilter.default_ratings,
     val searchText: String = "",
     val order: Order = Order.Relevant,
     val status: List<Status> = emptyList(),
