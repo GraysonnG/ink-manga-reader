@@ -17,6 +17,7 @@ import com.blanktheevil.inkmangareader.data.repositories.makeOptionallyAuthentic
 import com.blanktheevil.inkmangareader.data.repositories.mappers.convertToUrls
 import com.blanktheevil.inkmangareader.data.repositories.mappers.toChapter
 import com.blanktheevil.inkmangareader.data.repositories.mappers.toChapterList
+import com.blanktheevil.inkmangareader.data.repositories.mappers.toManga
 import com.blanktheevil.inkmangareader.data.room.dao.ChapterDao
 import com.blanktheevil.inkmangareader.data.room.dao.ListDao
 import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
@@ -46,8 +47,7 @@ class ChapterRepositoryImpl(
     )
 
     override suspend fun getEager(chapterId: String): Either<Chapter> = makeCall {
-        get(chapterId = chapterId, hardRefresh = false).value.successOrNull()
-            ?: mangaDexApi.getChapter(id = chapterId).data.toChapter()
+        chapterDao.get(chapterId)?.data ?: mangaDexApi.getChapter(id = chapterId).data.toChapter()
     }
 
     override suspend fun getList(
@@ -99,6 +99,14 @@ class ChapterRepositoryImpl(
 
     override suspend fun getPages(chapterId: String, dataSaver: Boolean): Either<List<String>> = makeCall {
         mangaDexApi.getChapterPages(chapterId = chapterId).convertToUrls(dataSaver = dataSaver)
+    }
+
+    @Deprecated("probably dont need this anymore")
+    override suspend fun getCoverImageUrlByChapterId(chapterId: String): Either<String?> = makeCall {
+        val chapter = chapterDao.get(chapterId)?.data ?: mangaDexApi.getChapter(id = chapterId).data.toChapter()
+        if (chapter.relatedManga == null && chapter.relatedMangaId == null) throw Exception("bad input")
+        val manga = chapter.relatedManga ?: mangaDexApi.getManga(ids = listOf(chapter.relatedMangaId!!)).data[0].toManga()
+        manga.coverArt
     }
 
     private fun <T : ChapterListRequest> T.getNetworkProvider(

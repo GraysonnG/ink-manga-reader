@@ -62,6 +62,7 @@ import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.repositories.mappers.LinkedChapter
+import com.blanktheevil.inkmangareader.download.DownloadManager
 import com.blanktheevil.inkmangareader.helpers.rememberFalseState
 import com.blanktheevil.inkmangareader.reader.ReaderManager
 import com.blanktheevil.inkmangareader.stubs.StubData
@@ -156,6 +157,7 @@ private fun MangaDetailLayout(
     color = LocalSurfaceSwatch.current.color,
     contentColor = LocalSurfaceSwatch.current.onColor,
 ) {
+    val downloadManager: DownloadManager = koinInject()
     val headerHeight = LocalConfiguration.current.screenHeightDp.dp.times(0.5f)
     val volumes = remember(chapters) {
         chapters.items.groupBy { it.volume ?: "No Volume" }
@@ -204,7 +206,7 @@ private fun MangaDetailLayout(
                     if (loading) {
                         item { VolumesSkeleton() }
                     } else {
-                        volumeItems(volumes)
+                        volumeItems(volumes, downloadManager)
                     }
                 }
             }

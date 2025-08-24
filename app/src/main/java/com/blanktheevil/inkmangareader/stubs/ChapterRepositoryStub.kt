@@ -30,4 +30,7 @@ class ChapterRepositoryStub : ChapterRepository {
 
     override suspend fun getPages(chapterId: String, dataSaver: Boolean): Either<List<String>> =
         success(listOf("a.png", "b.png"))
+
+    override suspend fun getCoverImageUrlByChapterId(chapterId: String): Either<String?> =
+        success("")
 }

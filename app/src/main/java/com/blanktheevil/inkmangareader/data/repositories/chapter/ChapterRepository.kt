@@ -12,7 +12,8 @@ interface ChapterRepository {
     suspend fun getEager(chapterId: String): Either<Chapter>
     suspend fun getList(request: ChapterListRequest, limit: Int = DEFAULT_LIST_LIMIT, offset: Int = 0, hardRefresh: Boolean): StateFlow<ChapterListEither>
     suspend fun markAsRead(mangaId: String, chapterId: String, isRead: Boolean)
-    suspend fun getPages(chapterId: String, dataSaver: Boolean): Either<List<String>>
+    suspend fun getPages(chapterId: String, dataSaver: Boolean = false): Either<List<String>>
+    suspend fun getCoverImageUrlByChapterId(chapterId: String): Either<String?>
 }
 
 typealias ChapterListEither = Either<ChapterList>

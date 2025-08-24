@@ -2,8 +2,10 @@ package com.blanktheevil.inkmangareader.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,10 +18,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,15 +35,23 @@ import androidx.compose.ui.unit.dp
 import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.models.ChapterList
+import com.blanktheevil.inkmangareader.download.DownloadManager
+import com.blanktheevil.inkmangareader.helpers.rememberFalseState
 import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.theme.LocalContainerSwatch
 import com.blanktheevil.inkmangareader.ui.theme.LocalPrimarySwatch
 import com.blanktheevil.inkmangareader.ui.theme.LocalSurfaceSwatch
+import org.koin.compose.koinInject
 
 @Composable
-fun Volume(title: String, chapters: List<Chapter>) = Column(
+fun Volume(
+    title: String,
+    chapters: List<Chapter>,
+    onMenuClicked: () -> Unit = {},
+    menu: @Composable BoxScope.() -> Unit = {},
+) = Column(
     modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)
@@ -61,7 +75,13 @@ fun Volume(title: String, chapters: List<Chapter>) = Column(
         Text(modifier = Modifier.weight(1f), text = title, style = MaterialTheme.typography.labelSmall)
         Text(modifier = Modifier.weight(1f), text = "Chapters $firstItemChapter-$lastItemChapter", textAlign = TextAlign.Center, style = MaterialTheme.typography.labelSmall)
         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-            InkIcon(resId = R.drawable.baseline_more_horiz_24)
+            InkIcon(
+                modifier = Modifier.clickable {
+                    onMenuClicked()
+                },
+                resId = R.drawable.baseline_more_horiz_24
+            )
+            menu()
         }
     }
     val chaptersGrouped = remember(chapters) {
@@ -94,9 +114,27 @@ fun Volume(title: String, chapters: List<Chapter>) = Column(
         }
 }
 
-fun LazyListScope.volumeItems(volumes: Map<String, List<Chapter>>) =
+fun LazyListScope.volumeItems(
+    volumes: Map<String, List<Chapter>>,
+    downloadManager: DownloadManager,
+) =
     items(volumes.entries.toList(), key = { (volume, _) -> "vol-$volume" }) { (volume, chapters) ->
-        Volume("Vol. $volume", chapters)
+        var menuOpened by rememberFalseState()
+
+        Volume("Vol. $volume", chapters, onMenuClicked = {
+            menuOpened = true
+        }) {
+            VolumeMenu(
+                expanded = menuOpened,
+                onDismissRequest = { menuOpened = false },
+                onDownloadAllClicked = {
+                    menuOpened = false
+                    downloadManager.downloadChapters(
+                        chapters.map { it.id }
+                    )
+                }
+            )
+        }
     }
 
 
@@ -163,6 +201,21 @@ fun VolumesSkeleton() = Column {
             }
         }
     }
+}
+
+@Composable
+private fun VolumeMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onDownloadAllClicked: () -> Unit,
+) = DropdownMenu(
+    expanded = expanded,
+    onDismissRequest = onDismissRequest,
+) {
+    DropdownMenuItem(
+        text = { Text("Download All") },
+        onClick = onDownloadAllClicked
+    )
 }
 
 @PreviewLightDark

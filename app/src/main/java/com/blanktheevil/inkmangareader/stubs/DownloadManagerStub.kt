@@ -1,6 +1,7 @@
 package com.blanktheevil.inkmangareader.stubs
 
 import com.blanktheevil.inkmangareader.data.Either
+import com.blanktheevil.inkmangareader.data.models.Chapter
 import com.blanktheevil.inkmangareader.data.success
 import com.blanktheevil.inkmangareader.download.DownloadManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +12,10 @@ class DownloadManagerStub : DownloadManager {
         get() = MutableStateFlow(mapOf(StubData.chapter().id to 0.1f))
 
     override fun downloadChapter(chapterId: String) {
+
+    }
+
+    override fun downloadChapters(chapterIds: List<String>) {
 
     }
 
@@ -30,5 +35,9 @@ class DownloadManagerStub : DownloadManager {
 
     override suspend fun getChapterPages(chapterId: String): Either<List<String>> {
         return success(emptyList())
+    }
+
+    override suspend fun getChapterData(chapterId: String): Either<Chapter> {
+        return success(StubData.chapter())
     }
 }

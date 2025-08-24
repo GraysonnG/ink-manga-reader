@@ -1,6 +1,7 @@
 package com.blanktheevil.inkmangareader.data.repositories.manga
 
 import android.util.Log
+import com.blanktheevil.inkmangareader.data.ContentFilter
 import com.blanktheevil.inkmangareader.data.DataList
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.Order
@@ -23,7 +24,12 @@ import com.blanktheevil.inkmangareader.data.repositories.mappers.toMangaList
 import com.blanktheevil.inkmangareader.data.room.dao.ListDao
 import com.blanktheevil.inkmangareader.data.room.dao.MangaDao
 import com.blanktheevil.inkmangareader.data.state.ModelStateProvider
+import com.blanktheevil.inkmangareader.settings.SettingsManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class MangaRepositoryImpl(
     private val modelStateProvider: ModelStateProvider,
@@ -32,10 +38,22 @@ class MangaRepositoryImpl(
     private val mangaDao: MangaDao,
     private val listDao: ListDao,
     private val sessionManager: SessionManager,
+    private val settingsManager: SettingsManager,
 ) : MangaRepository {
     companion object {
         private const val MANGA_PREFIX = "manga"
         private const val MANGA_LIST_PREFIX = "manga-list"
+    }
+
+    private val repoScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var contentRatings = ContentFilter.DEFAULT_RATINGS
+
+    init {
+        repoScope.launch {
+            settingsManager.settingsState.collect {
+                contentRatings = it.contentFilter
+            }
+        }
     }
 
     override suspend fun get(
@@ -48,6 +66,13 @@ class MangaRepositoryImpl(
         localProvider = { makeCall { mangaDao.get(key = mangaId)?.data } },
         persist = { manga -> mangaDao.insertModel(manga) },
     )
+
+    override suspend fun getEager(mangaId: String): Either<Manga> = makeCall {
+        mangaDao.get(mangaId)?.data
+            ?: (mangaDexApi.getManga(listOf(mangaId)).data[0].toManga().also {
+                mangaDao.insertModel(it)
+            })
+    }
 
     override suspend fun getList(
         request: MangaListRequest,
@@ -104,20 +129,34 @@ class MangaRepositoryImpl(
         limit: Int,
         offset: Int,
     ): suspend () -> MangaListEither = suspend {
+        Log.d("getList", "ContentRatings: $contentRatings")
         when (this) {
             is MangaListRequest.Generic -> makeCall {
                 Log.d("Generic List", data.joinToString(","))
-                mangaDexApi.getManga(ids = data, limit = limit, offset = offset)
+                mangaDexApi.getManga(
+                    ids = data,
+                    limit = limit,
+                    offset = offset,
+                    contentRating = contentRatings
+                )
                     .toMangaList(this.name)
             }
 
             is MangaListRequest.Popular -> makeCall {
-                mangaDexApi.getMangaPopular(limit = limit, offset = offset)
+                mangaDexApi.getMangaPopular(
+                    limit = limit,
+                    offset = offset,
+                    contentRating = contentRatings
+                )
                     .toMangaList(title = "Popular")
             }
 
             is MangaListRequest.Recent -> makeCall {
-                mangaDexApi.getMangaRecent(limit = limit, offset = offset)
+                mangaDexApi.getMangaRecent(
+                    limit = limit,
+                    offset = offset,
+                    contentRating = contentRatings
+                )
                     .toMangaList(title = "Recent")
             }
 
@@ -128,8 +167,12 @@ class MangaRepositoryImpl(
 
             is MangaListRequest.Seasonal -> makeCall {
                 githubApi.getSeasonalData().let {
-                    mangaDexApi.getManga(ids = it.mangaIds, limit = it.mangaIds.size, offset = 0)
-                        .toMangaList(title = it.name)
+                    mangaDexApi.getManga(
+                        ids = it.mangaIds,
+                        limit = it.mangaIds.size,
+                        offset = 0,
+                        contentRating = contentRatings
+                    ).toMangaList(title = it.name)
                 }
             }
 
@@ -143,11 +186,15 @@ class MangaRepositoryImpl(
                     ?.map { it.id }
                     ?: emptyList()
 
-                val user = res.data.relationships
-                    ?.getFirstOfType<UserDto>()
+                val user = res.data.relationships?.getFirstOfType<UserDto>()
 
                 if (ids.isNotEmpty()) {
-                    mangaDexApi.getManga(ids = ids.take(99), limit = limit, offset = offset)
+                    mangaDexApi.getManga(
+                        ids = ids.take(99),
+                        limit = limit,
+                        offset = offset,
+                        contentRating = contentRatings
+                    )
                         .toMangaList(
                             title = res.data.attributes.name,
                             extras = mapOf(

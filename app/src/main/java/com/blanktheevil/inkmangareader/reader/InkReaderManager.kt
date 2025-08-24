@@ -6,12 +6,14 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.blanktheevil.inkmangareader.bookmark.BookmarkManager
+import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
 import com.blanktheevil.inkmangareader.data.repositories.mappers.currentChapter
 import com.blanktheevil.inkmangareader.data.repositories.mappers.nextChapter
 import com.blanktheevil.inkmangareader.data.repositories.mappers.prevChapter
 import com.blanktheevil.inkmangareader.download.DownloadManager
+import com.blanktheevil.inkmangareader.hasActiveInternetConnection
 import com.blanktheevil.inkmangareader.helpers.orFalse
 import com.blanktheevil.inkmangareader.settings.SettingsManager
 import kotlinx.coroutines.CoroutineScope
@@ -39,9 +41,15 @@ class InkReaderManager(
     private val _state = MutableStateFlow(ReaderManagerState())
     override val state: StateFlow<ReaderManagerState> = _state.asStateFlow()
 
+    companion object {
+        private const val LONG_STRIP = "Long Strip"
+    }
+
     override fun setChapter(chapterId: String) {
         readerScope.launch {
             val isChapterDownloaded = downloadManager.isChapterDownloaded(chapterId)
+            val getChapterDataJob = async { getChapterData(chapterId = chapterId, isDownloaded = isChapterDownloaded) }
+            val getChapterPagesDataJob = async { getChapterPagesData(chapterId = chapterId, isDownloaded = isChapterDownloaded) }
 
             updateState { copy(
                 currentChapterId = chapterId,
@@ -50,9 +58,6 @@ class InkReaderManager(
                 currentChapterLoading = true,
                 currentChapterPagesLoaded = true,
             ) }
-
-            val getChapterDataJob = async { getChapterData(chapterId = chapterId) }
-            val getChapterPagesDataJob = async { getChapterPagesData(chapterId = chapterId, isDownloaded = isChapterDownloaded) }
 
             awaitAll(
                 getChapterDataJob,
@@ -84,63 +89,54 @@ class InkReaderManager(
         }
     }
 
-    private suspend fun getChapterData(chapterId: String) {
-        chapterRepository.getEager(chapterId = chapterId)
-            .onSuccess { chapter ->
-                updateState { copy(
-                    currentChapter = chapter,
-                    currentChapterLoading = false,
-                    mangaId = chapter.relatedMangaId,
-                    manga = chapter.relatedManga,
-                    readerType = if (chapter.relatedManga?.tags?.any { t -> t.equals("Long Strip", true) } == true) {
-                        ReaderType.VERTICAL
-                    } else {
-                        ReaderType.PAGE // TODO: SettingsManager stuff
-                    }
-                ) }
+    private suspend fun getChapterData(chapterId: String, isDownloaded: Boolean) {
+        val readerType = settingsManager.settingsState.firstOrNull()?.defaultReaderType
+            ?: ReaderType.PAGE
 
-                if (chapter.relatedMangaId != null) {
-                    readerScope.launch {
-                        mangaRepository.get(chapter.relatedMangaId, hardRefresh = false)
-                            .collectLatest {
-                                it.onSuccess { manga ->
-                                    updateState { copy(
-                                        manga = manga
-                                    ) }
-                                }
-                            }
-                    }
+        val chapterEither = if (isDownloaded) {
+            downloadManager.getChapterData(chapterId)
+        } else {
+            chapterRepository.getEager(chapterId)
+        }
+
+        chapterEither.onSuccess { chapter ->
+            updateState { copy(
+                currentChapter = chapter,
+                currentChapterLoading = false,
+                mangaId = chapter.relatedMangaId,
+                manga = chapter.relatedManga,
+                readerType = chapter.relatedManga.getReaderType(readerType)
+            ) }
+
+            if (chapter.relatedManga == null && chapter.relatedMangaId != null) {
+                mangaRepository.getEager(chapter.relatedMangaId).onSuccess { manga ->
+                    updateState { copy(
+                        manga = manga,
+                        readerType = manga.getReaderType(readerType)
+                    ) }
                 }
             }
+        }
     }
 
     private suspend fun getChapterPagesData(
         chapterId: String,
         isDownloaded: Boolean,
     ) {
-        if (isDownloaded) {
+        val pagesEither = if (isDownloaded) {
             downloadManager.getChapterPages(chapterId)
-                .onSuccess { pages ->
-                    updateState { copy(
-                        currentChapterPagesLoaded = false,
-                        currentChapterPageUrls = pages,
-                        currentChapterPageLoaded = List(pages.size) { true }
-                            .toMutableList()
-                    ) }
-                }
         } else {
             val dataSaver = settingsManager.settingsState.firstOrNull()?.dataSaver.orFalse()
+            chapterRepository.getPages(chapterId, dataSaver)
+        }
 
-            chapterRepository
-                .getPages(chapterId, dataSaver)
-                .onSuccess { pages ->
-                    updateState { copy(
-                        currentChapterPagesLoaded = false,
-                        currentChapterPageUrls = pages,
-                        currentChapterPageLoaded = List(pages.size) { false }
-                            .toMutableList(),
-                    ) }
-                }
+        pagesEither.onSuccess { pages ->
+            updateState { copy(
+                currentChapterPagesLoaded = false,
+                currentChapterPageUrls = pages,
+                currentChapterPageLoaded = List(pages.size) { true }
+                    .toMutableList()
+            ) }
         }
     }
 
@@ -202,6 +198,12 @@ class InkReaderManager(
     }
 
     override fun nextChapter() {
+        // TODO: this is a temp measure to prevent crashes in offline mode
+        if (!context.hasActiveInternetConnection) {
+            closeReader()
+            return
+        }
+
         _state.value.currentLinkedChapter?.let { currentChapter ->
             val nextChapter = _state.value.chapters.nextChapter(currentChapter)
             if (nextChapter != null) {
@@ -216,6 +218,12 @@ class InkReaderManager(
     }
 
     override fun prevChapter() {
+        // TODO: this is a temp measure to prevent crashes in offline mode
+        if (!context.hasActiveInternetConnection) {
+            closeReader()
+            return
+        }
+
         _state.value.currentLinkedChapter?.let { currentChapter ->
             val prevChapter = _state.value.chapters.prevChapter(currentChapter)
             if (prevChapter != null) {
@@ -245,6 +253,10 @@ class InkReaderManager(
             )
         }
     }
+
+    private fun Manga?.getReaderType(default: ReaderType): ReaderType = if (
+        this?.tags?.any { it.equals(LONG_STRIP, true) } == true
+    ) ReaderType.VERTICAL else default
 
     private fun setBookmark() = with(_state.value) {
         if (this.currentChapterId != null && this.mangaId != null) {

@@ -22,6 +22,9 @@ class MangaRepositoryStub : MangaRepository {
     ): StateFlow<MangaListEither> =
         MutableStateFlow(success(StubData.mangaList("Manga List", 5)))
 
+    override suspend fun getEager(mangaId: String): Either<Manga> =
+        success(StubData.manga())
+
     override suspend fun follow(mangaId: String): Either<Unit> {
         TODO("Not yet implemented")
     }

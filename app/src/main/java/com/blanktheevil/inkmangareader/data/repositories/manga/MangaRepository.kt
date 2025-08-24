@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface MangaRepository {
     suspend fun get(mangaId: String, hardRefresh: Boolean = false): StateFlow<Either<Manga>>
+    suspend fun getEager(mangaId: String): Either<Manga>
     suspend fun getList(
         request: MangaListRequest,
         limit: Int = DEFAULT_LIST_LIMIT,
