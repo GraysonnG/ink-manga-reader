@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.stubs.StubData
+import com.blanktheevil.inkmangareader.ui.Crossfade
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.toAsyncPainterImage
 
@@ -52,7 +53,7 @@ fun MangaCard(
     ) {
         val coverImage = manga.coverArt.toAsyncPainterImage(
             placeholder = placeholderRes,
-            crossfade = true
+            crossfade = Crossfade.SHORT
         )
         Image(
             modifier = imageModifier

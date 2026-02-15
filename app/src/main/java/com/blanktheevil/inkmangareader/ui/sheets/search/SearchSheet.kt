@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -21,7 +22,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -66,8 +66,6 @@ fun SearchSheet(
             viewModel.onDismiss()
         },
         sheetState = state,
-        shape = RectangleShape,
-        dragHandle = null,
     ) {
         SearchSheetContent(
             loading = uiState.loading,
@@ -123,14 +121,16 @@ private fun SearchSheetContent(
     Column(
         Modifier
             .fillMaxSize()
-            .padding(top = statusBarSize),
+            .padding(top = statusBarSize)
+            .padding(horizontal = 8.dp),
         horizontalAlignment = Alignment.End,
     ) {
         TextInputField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             value = searchText,
             placeholder = searchPlaceholder,
             onValueChange = onTextChanged,
+            shape = RoundedCornerShape(64.dp),
             trailingIcon = {
                 InkIcon(resId = R.drawable.round_search_24)
             },
@@ -142,7 +142,6 @@ private fun SearchSheetContent(
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp)
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 64.dp),

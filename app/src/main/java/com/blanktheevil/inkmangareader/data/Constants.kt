@@ -2,8 +2,6 @@ package com.blanktheevil.inkmangareader.data
 
 import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.data.models.Tag
-import com.squareup.moshi.JsonClass
-import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 
 const val DEFAULT_LIST_LIMIT = 20
 

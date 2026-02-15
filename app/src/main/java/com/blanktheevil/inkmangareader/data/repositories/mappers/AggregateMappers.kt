@@ -27,6 +27,7 @@ data class LinkedChapter(
     val others: List<String>,
     val nextId: String?,
     val prevId: String?,
+    val chapterUrl: String? = null,
 )
 
 /**

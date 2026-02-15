@@ -1,6 +1,7 @@
 package com.blanktheevil.inkmangareader.reader
 
 import android.content.Context
+import android.util.Log
 import coil.executeBlocking
 import coil.imageLoader
 import coil.request.ImageRequest
@@ -14,18 +15,20 @@ import com.blanktheevil.inkmangareader.data.repositories.mappers.nextChapter
 import com.blanktheevil.inkmangareader.data.repositories.mappers.prevChapter
 import com.blanktheevil.inkmangareader.download.DownloadManager
 import com.blanktheevil.inkmangareader.hasActiveInternetConnection
-import com.blanktheevil.inkmangareader.helpers.orFalse
+import com.blanktheevil.inkmangareader.launchAsUnit
+import com.blanktheevil.inkmangareader.log
+import com.blanktheevil.inkmangareader.orFalse
 import com.blanktheevil.inkmangareader.settings.SettingsManager
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
@@ -43,48 +46,53 @@ class InkReaderManager(
 
     companion object {
         private const val LONG_STRIP = "Long Strip"
+        private val TAG = InkReaderManager::class.java.simpleName
     }
 
-    override fun setChapter(chapterId: String) {
-        readerScope.launch {
-            val isChapterDownloaded = downloadManager.isChapterDownloaded(chapterId)
-            val getChapterDataJob = async { getChapterData(chapterId = chapterId, isDownloaded = isChapterDownloaded) }
-            val getChapterPagesDataJob = async { getChapterPagesData(chapterId = chapterId, isDownloaded = isChapterDownloaded) }
+    private var preloadImagesJob: Pair<String, Job>? = null
 
-            updateState { copy(
-                currentChapterId = chapterId,
-                currentPage = 0,
-                currentChapterPageUrls = emptyList(),
-                currentChapterLoading = true,
-                currentChapterPagesLoaded = true,
-            ) }
+    override fun setChapter(chapterId: String) = readerScope.launchAsUnit {
+        val isChapterDownloaded = downloadManager.isChapterDownloaded(chapterId)
+        val getChapterDataJob = async { getChapterData(chapterId = chapterId, isDownloaded = isChapterDownloaded) }
+        val getChapterPagesDataJob = async { getChapterPagesData(chapterId = chapterId, isDownloaded = isChapterDownloaded) }
 
-            awaitAll(
-                getChapterDataJob,
-                getChapterPagesDataJob
-            )
+        if (preloadImagesJob != null && preloadImagesJob?.first != chapterId) {
+            preloadImagesJob?.second?.cancel()
+        }
 
-            setBookmark()
+        updateState { copy(
+            currentChapterId = chapterId,
+            currentPage = 0,
+            currentChapterPageUrls = emptyList(),
+            currentChapterLoading = true,
+            currentChapterPagesLoaded = true,
+        ) }
 
-            if (_state.value.currentChapterPageUrls.size == 1) {
-                markChapterRead(true)
-            }
+        awaitAll(
+            getChapterDataJob,
+            getChapterPagesDataJob
+        )
 
-            updateState { copy(
-                expanded = true,
-            ) }
+        setBookmark()
 
-            if (!isChapterDownloaded) {
-                preloadChapterPages(_state.value.currentChapterPageUrls)
-            }
+        if (_state.value.currentChapterPageUrls.size == 1) {
+            markChapterRead(true)
+        }
 
-            _state.value.mangaId?.let { mangaId ->
-                mangaRepository.getAggregate(mangaId = mangaId).onSuccess { chapters ->
-                    updateState { copy(
-                        chapters = chapters,
-                        currentLinkedChapter = chapters.currentChapter(chapterId)
-                    ) }
-                }
+        updateState { copy(
+            expanded = true,
+        ) }
+
+        if (!isChapterDownloaded && preloadImagesJob?.first != chapterId) {
+            preloadImagesJob = chapterId to preloadChapterPages(_state.value.currentChapterPageUrls)
+        }
+
+        _state.value.mangaId?.let { mangaId ->
+            mangaRepository.getAggregate(mangaId = mangaId).onSuccess { chapters ->
+                updateState { copy(
+                    chapters = chapters,
+                    currentLinkedChapter = chapters.currentChapter(chapterId)
+                ) }
             }
         }
     }
@@ -134,8 +142,7 @@ class InkReaderManager(
             updateState { copy(
                 currentChapterPagesLoaded = false,
                 currentChapterPageUrls = pages,
-                currentChapterPageLoaded = List(pages.size) { true }
-                    .toMutableList()
+                currentChapterPageLoaded = List(pages.size) { isDownloaded }.toMutableList()
             ) }
         }
     }
@@ -271,9 +278,10 @@ class InkReaderManager(
         _state.value = transform(_state.value)
     }
 
-    private suspend fun preloadChapterPages(
+    private fun preloadChapterPages(
         urls: List<String>
-    ) = coroutineScope {
+    ) = readerScope.launchPreloadJob {
+        log("preloadChapterPages: Started", tag = TAG)
         val chunkedUrls = urls.chunked(4)
         for (chunkIndex in chunkedUrls.indices) {
             val requests = chunkedUrls[chunkIndex].map { url ->
@@ -300,4 +308,23 @@ class InkReaderManager(
             }.awaitAll()
         }
     }
+
+    private fun CoroutineScope.launchPreloadJob(block: suspend CoroutineScope.() -> Unit): Job =
+        launch(block = block).apply {
+            invokeOnCompletion { cause ->
+                when (cause) {
+                    null -> {
+                        preloadImagesJob = null
+                        log("preloadChapterPages: Success", tag = TAG)
+                    }
+                    is CancellationException -> {
+                        log("preloadChapterPages: Cancelled", Log::w, tag = TAG)
+                    }
+                    else -> {
+                        log("preloadChapterPages: Error", Log::e, tag = TAG)
+                        cause.printStackTrace()
+                    }
+                }
+            }
+        }
 }

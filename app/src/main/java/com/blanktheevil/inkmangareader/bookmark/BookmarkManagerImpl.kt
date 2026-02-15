@@ -1,6 +1,7 @@
 package com.blanktheevil.inkmangareader.bookmark
 
 import com.blanktheevil.inkmangareader.data.room.dao.BookmarkDao
+import com.blanktheevil.inkmangareader.launchAsUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,22 +16,19 @@ class BookmarkManagerImpl(
 
     init {
         scope.launch {
-            bookmarkDao.getAll()?.let {
+            bookmarkDao.getAll().let {
                 bookmarkState.value = it.associate { model -> model.mangaId to model.chapterId }
             }
         }
     }
 
-    override fun setBookmark(mangaId: String, chapterId: String) {
-        scope.launch {
-            bookmarkDao.insert(mangaId, chapterId)
-            bookmarkState.value += mangaId to chapterId
-        }
+    override fun setBookmark(mangaId: String, chapterId: String) = scope.launchAsUnit {
+        bookmarkDao.insert(mangaId, chapterId)
+        bookmarkState.value += mangaId to chapterId
     }
 
-    override fun removeBookmark(mangaId: String) {
-        scope.launch {
-            bookmarkDao.remove(mangaId)
-        }
+
+    override fun removeBookmark(mangaId: String) = scope.launchAsUnit {
+        bookmarkDao.remove(mangaId)
     }
 }

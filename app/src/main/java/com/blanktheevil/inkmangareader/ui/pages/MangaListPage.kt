@@ -1,8 +1,6 @@
 package com.blanktheevil.inkmangareader.ui.pages
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,9 +57,9 @@ import com.blanktheevil.inkmangareader.stubs.StubData
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.LocalNavController
-import com.blanktheevil.inkmangareader.ui.cap
 import com.blanktheevil.inkmangareader.ui.components.ImageHeader
-import com.blanktheevil.inkmangareader.ui.components.MangaCard
+import com.blanktheevil.inkmangareader.ui.components.InkMangaCard
+import com.blanktheevil.inkmangareader.ui.components.MangaCardType
 import com.blanktheevil.inkmangareader.ui.permanentStatusBarSize
 import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaListViewModel.Params
@@ -135,22 +133,20 @@ private fun MangaListPageLayout(
                 .nestedScroll(nsc)
             ,
             columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(32.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(
                 vertical = 8.dp
-            )
+            ),
         ) {
             itemsIndexed(
                 uiState.list.items,
                 key = { index, item -> item.id + index }
             ) { index, item ->
-                MangaCard(
-                    modifier = Modifier.fillMaxSize()
-                        .animateItem(
-                            fadeInSpec = tween(300, index.div(2) * 50)
-                        ),
+                InkMangaCard(
                     manga = item,
+                    clampHeight = false,
+                    mangaCardType = MangaCardType.TALL,
                     placeholderRes = mangaPlaceholderRes,
                 ) {
                     onMangaCardClicked(item.id)
@@ -224,8 +220,14 @@ private fun BoxScope.TitleDetailContent(
         .padding(bottom = 8.dp)
         .align(Alignment.BottomStart),
 ) {
+    val searchText = remember(searchParams) {
+        searchParams?.search.takeIf { !it.isNullOrBlank() }?.let {
+            ": $it"
+        } ?: ""
+    }
+
     Text(
-        text = title + (searchParams?.search?.let { ": $it" } ?: ""),
+        text = title + searchText,
         style = MaterialTheme.typography.headlineLarge
     )
 
@@ -395,12 +397,13 @@ private fun Preview() = DefaultPreview {
     MangaListPageLayout(
         uiState = State(
             list = StubData.mangaList(
+                title = "Search",
                 length = 12,
 //                extras = mapOf("username" to "Test User")
             ),
             loading = false,
             searchParams = SearchParams(
-                search = "Search String",
+                search = "",
                 contentRating = ContentFilter.list.map { it.value },
                 order = Order.Relevant,
                 publicationDemographic = Demographic.list.map { it.value },

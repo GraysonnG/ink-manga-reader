@@ -27,6 +27,8 @@ inline fun <T, R> DataList<T>.map(transform: (T) -> R) = DataList(
     extras = extras,
 )
 
+fun <T> DataList<T>.isEmpty() = this.items.isEmpty()
+
 operator fun <T> DataList<T>.plus(other: DataList<T>): DataList<T> {
     return DataList(
         items = this.items + other.items,
@@ -37,3 +39,5 @@ operator fun <T> DataList<T>.plus(other: DataList<T>): DataList<T> {
         extras = this.extras?.plus(other.extras ?: emptyMap()),
     )
 }
+
+operator fun <T> DataList<T>.contains(item: T): Boolean = item in items

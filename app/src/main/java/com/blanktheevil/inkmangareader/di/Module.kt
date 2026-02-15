@@ -5,17 +5,17 @@ import com.blanktheevil.inkmangareader.adapters.JSONObjectAdapter
 import com.blanktheevil.inkmangareader.adapters.OrderAdapter
 import com.blanktheevil.inkmangareader.bookmark.BookmarkManager
 import com.blanktheevil.inkmangareader.bookmark.BookmarkManagerImpl
-import com.blanktheevil.inkmangareader.data.ContentFilter
-import com.blanktheevil.inkmangareader.data.Demographic
 import com.blanktheevil.inkmangareader.data.Order
-import com.blanktheevil.inkmangareader.data.Status
 import com.blanktheevil.inkmangareader.data.api.GithubApi
 import com.blanktheevil.inkmangareader.data.api.MangaDexApi
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
+import com.blanktheevil.inkmangareader.data.builders.ChapterBuilder
+import com.blanktheevil.inkmangareader.data.builders.ChapterListBuilder
 import com.blanktheevil.inkmangareader.data.dto.RelationshipList
 import com.blanktheevil.inkmangareader.data.repositories.auth.AuthRepository
 import com.blanktheevil.inkmangareader.data.repositories.auth.AuthRepositoryImpl
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
+import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository2
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepositoryImpl
 import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepositoryImpl
@@ -114,6 +114,10 @@ val appModule = module {
     single { get<InkDatabase>().bookmarkDao() }
     single { get<InkDatabase>().settingsDao() }
 
+    // builders
+    singleOf(::ChapterBuilder)
+    singleOf(::ChapterListBuilder)
+
     // repositories
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
     singleOf(::UserRepositoryImpl) { bind<UserRepository>() }
@@ -121,6 +125,9 @@ val appModule = module {
     singleOf(::ChapterRepositoryImpl) { bind<ChapterRepository>() }
     singleOf(::UserListRepositoryImpl) { bind<UserListRepository>() }
     singleOf(::TagsRepositoryImpl) { bind<TagsRepository>() }
+    single {
+        ChapterRepository2(get(), get(), get(), get())
+    }
 
     // providers
     singleOf(::ModelStateProvider)

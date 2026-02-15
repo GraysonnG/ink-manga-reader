@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -32,13 +31,10 @@ fun MangaShelf(
     ){
         item { Spacer(modifier = Modifier) }
         items(mangaList.items) {
-            MangaCard(
-                imageModifier = Modifier
-                    .height(240.dp),
-                manga = it
-            ) {
-                onItemClicked(it.id)
-            }
+            InkMangaCard(
+                manga = it,
+                mangaCardType = MangaCardType.TALL,
+            ) { onItemClicked(it.id) }
         }
         item { Spacer(modifier = Modifier) }
     }

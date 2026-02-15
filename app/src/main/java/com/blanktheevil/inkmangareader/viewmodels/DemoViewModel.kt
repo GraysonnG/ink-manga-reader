@@ -1,16 +1,16 @@
 package com.blanktheevil.inkmangareader.viewmodels
 
 import android.util.Log
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
+import com.blanktheevil.inkmangareader.combine
 import com.blanktheevil.inkmangareader.data.Either
 import com.blanktheevil.inkmangareader.data.Order
 import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.blanktheevil.inkmangareader.data.error
 import com.blanktheevil.inkmangareader.data.filterEitherSuccess
-import com.blanktheevil.inkmangareader.data.id
-import com.blanktheevil.inkmangareader.data.isInvalid
 import com.blanktheevil.inkmangareader.data.models.Chapter
-import com.blanktheevil.inkmangareader.data.models.ChapterList
 import com.blanktheevil.inkmangareader.data.models.Manga
 import com.blanktheevil.inkmangareader.data.models.MangaList
 import com.blanktheevil.inkmangareader.data.models.Tag
@@ -22,17 +22,19 @@ import com.blanktheevil.inkmangareader.data.repositories.SearchParams
 import com.blanktheevil.inkmangareader.data.repositories.chapter.ChapterRepository
 import com.blanktheevil.inkmangareader.data.repositories.list.UserListRepository
 import com.blanktheevil.inkmangareader.data.repositories.manga.MangaRepository
+import com.blanktheevil.inkmangareader.data.success
+import com.blanktheevil.inkmangareader.data.withSession
 import com.blanktheevil.inkmangareader.helpers.getCreatedAtSinceString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -126,51 +128,71 @@ class DemoViewModel(
         Dispatchers.IO
     ) {
         updateState { copy(chapterFeedLoading = true) }
-        sessionManager.session
-            .onEach {
-                if (it.isInvalid()) {
-                    sessionManager.refresh()
-                    if (sessionManager.session.value.isInvalid()) {
-                        updateState { copy(chapterFeedLoading = false) }
-                    }
-                }
-            }
-            .onUniqueSession()
-            .onEach { Log.d(this@DemoViewModel::class.java.simpleName, "Followed Feed Session Valid: $it") }
-            .flatMapLatest { chapterRepository.getList(ChapterListRequest.Follows, limit = 30, hardRefresh = hardRefresh) }
-            .distinctUntilChangedBy { it.successOrNull()?.id }
-            .onEitherError { updateState { copy(chapterFeedLoading = false) } }
-            .filterEitherSuccess()
-            .flatMapLatest {
-                val ids = it.items.mapNotNull { ch -> ch.relatedMangaId }.distinct()
-                if (ids.isEmpty()) return@flatMapLatest flow<Pair<ChapterList, Either.Error<MangaList>>> {
-                    emit(Pair(it, error(Exception("No Ids"))))
-                }
-                combine(
-                    flow { emit(it) },
-                    mangaRepository.getList(MangaListRequest.Generic(ids), hardRefresh = hardRefresh),
-                    ::Pair
+
+        sessionManager
+            .withSession(
+                chapterRepository.getList(
+                    request = ChapterListRequest.Follows,
+                    limit = 30,
+                    hardRefresh = hardRefresh
                 )
+            )
+            .filterEitherSuccess()
+            .flatMapLatest { chapters ->
+                val ids = chapters.items.mapNotNull { ch -> ch.relatedMangaId }.distinct()
+                if (ids.isEmpty()) return@flatMapLatest flowOf(
+                    error(Exception("No chapters found"))
+                )
+
+                mangaRepository.getList(
+                    MangaListRequest.Generic(ids),
+                    hardRefresh = hardRefresh
+                )
+                    .map { either ->
+                        when (either) {
+                            is Either.Success -> success(
+                                either.data.items.associateWith { manga ->
+                                    chapters.items.filter {
+                                        it.relatedMangaId == manga.id
+                                    }
+                                }
+                            )
+                            is Either.Null -> Either.Null()
+                            is Either.Error -> error(either.error)
+                        }
+                    }
             }
             .distinctUntilChanged()
-            .collect { (list, either) ->
-                either.onSuccess { mangaList ->
-                    val data = mangaList.items.map { manga ->
-                        Pair(manga, list.items.filter { ch -> ch.relatedMangaId == manga.id })
-                    }.sortedBy { (_, chapters) ->
-                        chapters.all { ch -> ch.isRead == true }
-                    }.toMap()
-
-                    updateState {
-                        copy(
-                            chapterFeed = data,
-                            chapterFeedLoading = false
-                        )
-                    }
-                }.onError {
-
+            .onEitherError {
+                updateState { copy(chapterFeedLoading = false) }
+            }
+            .filterEitherSuccess()
+            .debounce(200)
+            .collect { data ->
+                updateState {
+                    copy(
+                        chapterFeed = data,
+                        chapterFeedLoading = false,
+                    )
                 }
             }
+//            .distinctUntilChanged()
+//            .collect { (chapters, mangaEither) ->
+//                mangaEither.onSuccess { mangaList ->
+//                    val data = mangaList.items.map { manga ->
+//                        Pair(manga, chapters.items.filter { ch -> ch.relatedMangaId == manga.id })
+//                    }.sortedBy { (_, sortedChapters) ->
+//                        sortedChapters.all { ch -> ch.isRead == true }
+//                    }.toMap()
+//
+//                    updateState {
+//                        copy(
+//                            chapterFeed = data,
+//                            chapterFeedLoading = false
+//                        )
+//                    }
+//                }
+//            }
     }
 
     private fun getOtherLists(hardRefresh: Boolean) = viewModelScope.launch(
@@ -183,7 +205,6 @@ class DemoViewModel(
         combine(
             mangaRepository.getList(MangaListRequest.Popular, hardRefresh = hardRefresh),
             mangaRepository.getList(MangaListRequest.Recent, hardRefresh = hardRefresh),
-            ::Pair
         )
             .onEach {
                 it.first.onSuccess {
@@ -250,6 +271,8 @@ class DemoViewModel(
             }
     }
 
+    @Immutable
+    @Stable
     data class DemoState(
         override val errors: List<Any> = emptyList(),
         override val loading: Boolean = true,

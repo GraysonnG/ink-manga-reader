@@ -9,6 +9,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -55,6 +56,7 @@ import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.cap
 import com.blanktheevil.inkmangareader.ui.theme.springGentle
+import com.blanktheevil.inkmangareader.ui.theme.springPlayful
 import com.blanktheevil.inkmangareader.ui.theme.springQuick
 import java.util.Locale
 
@@ -138,7 +140,16 @@ private fun Category(
     }
     var categoryOpen by remember { mutableStateOfFalse() }
 
-    Column {
+    Column(
+        Modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .animateContentSize(animationSpec = springPlayful())
+    ) {
         CategoryTitle(
             name = name,
             locale = locale,

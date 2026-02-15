@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val chapterId: String? = handleChapterDeeplink()
 
@@ -61,7 +63,7 @@ class MainActivity : ComponentActivity() {
                         if (chapterId != null && chapterId.isUUID()) {
                             readerManager.setChapter(chapterId)
                             val mangaId = readerManager.state.mapNotNull { it.mangaId }.first()
-                            Log.d("MainActivity","mangaId: $mangaId")
+                            Log.d("MainActivity", "mangaId: $mangaId")
                             navController.navigateToMangaDetail(mangaId)
                         }
                     }
@@ -71,7 +73,8 @@ class MainActivity : ComponentActivity() {
                             Surface(
                                 Modifier
                                     .padding(bottom = it.calculateBottomPadding())
-                                    .fillMaxSize()) {
+                                    .fillMaxSize()
+                            ) {
                                 PrimaryNavGraph()
                             }
                         }

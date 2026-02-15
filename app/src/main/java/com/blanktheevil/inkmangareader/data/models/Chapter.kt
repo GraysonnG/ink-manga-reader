@@ -1,9 +1,11 @@
 package com.blanktheevil.inkmangareader.data.models
 
+import androidx.compose.runtime.Immutable
 import com.blanktheevil.inkmangareader.data.DataList
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
+@Immutable
 data class Chapter(
     override val id: String,
     override val type: String = Chapter::class.java.name,
@@ -22,6 +24,7 @@ data class Chapter(
 typealias ChapterList = DataList<Chapter>
 
 @JsonClass(generateAdapter = true)
+@Immutable
 data class ChapterTitle(
     val primary: String,
     val short: String,

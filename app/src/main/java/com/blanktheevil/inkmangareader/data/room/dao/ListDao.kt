@@ -14,6 +14,9 @@ interface ListDao : BaseDao<ListModel, DataList<out BaseItem>>{
     @Query("SELECT * FROM ListModel WHERE `key` = :key")
     override suspend fun get(key: String): ListModel?
 
+    @Query("SELECT * FROM ListModel")
+    suspend fun getAll(): List<ListModel>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     override suspend fun insert(data: ListModel)
 

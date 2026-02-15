@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -43,16 +45,17 @@ import com.blanktheevil.inkmangareader.ui.InkIcon
 import com.blanktheevil.inkmangareader.ui.theme.LocalContainerSwatch
 import com.blanktheevil.inkmangareader.ui.theme.LocalPrimarySwatch
 import com.blanktheevil.inkmangareader.ui.theme.LocalSurfaceSwatch
-import org.koin.compose.koinInject
+import com.blanktheevil.inkmangareader.ui.theme.springQuick
 
 @Composable
 fun Volume(
+    modifier: Modifier = Modifier,
     title: String,
     chapters: List<Chapter>,
     onMenuClicked: () -> Unit = {},
     menu: @Composable BoxScope.() -> Unit = {},
 ) = Column(
-    modifier = Modifier
+    modifier = modifier
         .fillMaxWidth()
         .padding(8.dp)
         .clip(RoundedCornerShape(8.dp))
@@ -121,7 +124,13 @@ fun LazyListScope.volumeItems(
     items(volumes.entries.toList(), key = { (volume, _) -> "vol-$volume" }) { (volume, chapters) ->
         var menuOpened by rememberFalseState()
 
-        Volume("Vol. $volume", chapters, onMenuClicked = {
+        Volume(
+            modifier = Modifier.animateItem(
+                fadeInSpec = springQuick(),
+                fadeOutSpec = null,
+                placementSpec = springQuick(),
+            ),
+            "Vol. $volume", chapters, onMenuClicked = {
             menuOpened = true
         }) {
             VolumeMenu(
@@ -145,15 +154,19 @@ fun Volumes(chapters: ChapterList) = Column {
     }
 
     volumes.forEach { (vol, chapters) ->
-        Volume("Vol. $vol", chapters)
+        Volume(Modifier, "Vol. $vol", chapters)
     } 
 }
 
 @Composable
-fun VolumesSkeleton() = Column {
+fun LazyItemScope.VolumesSkeleton() = Column {
     repeat(3) {
         Column(
             modifier = Modifier.fillMaxWidth()
+                .animateItem(
+                    fadeInSpec = null,
+                    fadeOutSpec = springQuick()
+                )
         ) {
             Column(
                 modifier = Modifier
@@ -221,7 +234,9 @@ private fun VolumeMenu(
 @PreviewLightDark
 @Composable
 private fun PreviewSkeleton() = DefaultPreview {
-    VolumesSkeleton()
+    LazyColumn {
+        item { VolumesSkeleton() }
+    }
 }
 
 @PreviewLightDark

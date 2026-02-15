@@ -13,6 +13,7 @@ import com.blanktheevil.inkmangareader.ui.theme.LocalSurfaceSwatch
 import com.blanktheevil.inkmangareader.ui.theme.containerSwatch
 import com.blanktheevil.inkmangareader.ui.theme.primarySwatch
 import com.blanktheevil.inkmangareader.ui.theme.surfaceSwatch
+import dev.chrisbanes.haze.rememberHazeState
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
@@ -34,6 +35,7 @@ fun DefaultPreview(block: @Composable () -> Unit) {
             LocalPrimarySwatch provides MaterialTheme.colorScheme.primarySwatch,
             LocalContainerSwatch provides MaterialTheme.colorScheme.containerSwatch,
             LocalSurfaceSwatch provides MaterialTheme.colorScheme.surfaceSwatch,
+            LocalHazeState provides rememberHazeState(),
         ) {
             Surface {
                 block()

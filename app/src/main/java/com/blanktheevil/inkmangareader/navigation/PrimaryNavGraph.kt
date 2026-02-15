@@ -101,6 +101,11 @@ sealed class InkDestination(val route: String) {
     }"
 }
 
+private val enterTransition = Transitions.slideIn
+private val exitTransition = Transitions.slideOut
+private val popEnterTransition = Transitions.slideInRev
+private val popExitTransition = Transitions.slideOutRev
+
 private fun NavGraphBuilder.simpleComposable(
     route: InkDestination,
     arguments: List<NamedNavArgument> = emptyList(),
@@ -111,10 +116,10 @@ private fun NavGraphBuilder.simpleComposable(
         route = route.route,
         arguments = arguments,
         deepLinks = deepLinks,
-        enterTransition = Transitions.slideIn,
-        exitTransition = Transitions.slideOut,
-        popEnterTransition = Transitions.slideInRev,
-        popExitTransition = Transitions.slideOutRev,
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+        popEnterTransition = popEnterTransition,
+        popExitTransition = popExitTransition,
         content = content,
     )
 }
@@ -129,10 +134,10 @@ private fun NavGraphBuilder.simpleComposable(
         route = route,
         arguments = arguments,
         deepLinks = deepLinks,
-        enterTransition = Transitions.slideIn,
-        exitTransition = Transitions.slideOut,
-        popEnterTransition = Transitions.slideInRev,
-        popExitTransition = Transitions.slideOutRev,
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+        popEnterTransition = popEnterTransition,
+        popExitTransition = popExitTransition,
         content = content,
     )
 }

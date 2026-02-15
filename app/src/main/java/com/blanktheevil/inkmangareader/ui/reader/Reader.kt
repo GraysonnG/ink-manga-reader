@@ -61,6 +61,7 @@ import com.blanktheevil.inkmangareader.navigation.navigateToMangaDetail
 import com.blanktheevil.inkmangareader.reader.ReaderManager
 import com.blanktheevil.inkmangareader.reader.ReaderManagerState
 import com.blanktheevil.inkmangareader.reader.ReaderType
+import com.blanktheevil.inkmangareader.ui.Crossfade
 import com.blanktheevil.inkmangareader.ui.LocalNavController
 import com.blanktheevil.inkmangareader.ui.LocalWindow
 import com.blanktheevil.inkmangareader.ui.hideSystemBars
@@ -195,7 +196,7 @@ private fun BoxScope.MiniView(
     Image(
         modifier = Modifier.fillMaxSize(),
         painter = coverImageUrl.toAsyncPainterImage(
-            crossfade = true
+            crossfade = Crossfade.SHORT
         ),
         contentDescription = null,
         contentScale = ContentScale.Crop,

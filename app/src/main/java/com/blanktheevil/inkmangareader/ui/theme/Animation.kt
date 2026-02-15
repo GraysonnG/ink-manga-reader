@@ -12,6 +12,11 @@ fun <T> springQuick() = spring<T>(
     dampingRatio = 1.118f,
 )
 
+fun <T> springPlayful() = spring<T>(
+    stiffness = 400f,
+    dampingRatio = 0.75f
+)
+
 fun <T> springBouncy() = spring<T>(
     stiffness = 600f,
     dampingRatio = 0.306f,

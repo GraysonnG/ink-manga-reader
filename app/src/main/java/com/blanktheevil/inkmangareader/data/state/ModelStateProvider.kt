@@ -48,9 +48,7 @@ class ModelStateProvider(
                 // get the local state or an Either.Null
                 val localState = localProvider?.invoke() ?: Either.Null()
                 // get the local state and if its not a success grab a new network state
-                val state = if (localState !is Either.Success)
-                    getNetworkDataAndPersist(activeState, networkProvider, persist)
-                else localState
+                val state = localState as? Either.Success ?: getNetworkDataAndPersist(activeState, networkProvider, persist)
                 // emit the the state into the flow
                 activeState.stateFlow.emit(state)
             }
@@ -59,7 +57,7 @@ class ModelStateProvider(
         return activeState.stateFlow
     }
 
-    suspend fun <T> update(
+    suspend fun <T : BaseItem> update(
         key: String,
         persist: (suspend (T) -> Unit)? = null,
         update: T.() -> T
@@ -69,10 +67,8 @@ class ModelStateProvider(
             val newState = update(it)
             activeState.stateFlow.emit(success(newState))
             persist?.invoke(newState)
-            if (newState is BaseItem) {
-                Log.d("Update", "Notifying item lists...")
-                notifyItemListOfChange(newState)
-            }
+            Log.d("Update", "Notifying item lists...")
+            notifyItemListOfChange(newState)
         }
     }
 
@@ -107,7 +103,7 @@ class ModelStateProvider(
             }
     }
 
-    private suspend inline fun <reified T : BaseItem> notifyItemListOfChange(itemChanged: T) =
+    private suspend inline fun <T : BaseItem> notifyItemListOfChange(itemChanged: T) =
         states.values
             .filterIsListOfBaseItem(itemChanged.type)
             .filterIsInstance<ActiveState<DataList<T>>>()

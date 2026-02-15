@@ -13,6 +13,9 @@ interface ChapterDao : BaseDao<ChapterModel, Chapter> {
     @Query("SELECT * FROM ChapterModel WHERE `key` = :key")
     override suspend fun get(key: String): ChapterModel?
 
+    @Query("SELECT * FROM ChapterModel")
+    suspend fun getAll(): List<ChapterModel>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     override suspend fun insert(data: ChapterModel)
 

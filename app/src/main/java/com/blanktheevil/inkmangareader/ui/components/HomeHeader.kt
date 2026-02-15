@@ -1,18 +1,20 @@
 package com.blanktheevil.inkmangareader.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,13 +36,20 @@ import androidx.compose.ui.zIndex
 import com.blanktheevil.inkmangareader.R
 import com.blanktheevil.inkmangareader.ui.DefaultPreview
 import com.blanktheevil.inkmangareader.ui.InkIcon
+import com.blanktheevil.inkmangareader.ui.LocalHazeState
 import com.blanktheevil.inkmangareader.ui.statusBarSize
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.delay
+
+private val buttonBorderColor = Color.White.copy(alpha = 0.2f)
 
 @Composable
 fun HomeHeader(
     scrollFraction: Float,
     authenticated: Boolean,
+    hazeState: HazeState,
     authenticatedInitialState: Boolean = false,
     onSearchClicked: () -> Unit = {},
     onSettingsClicked: () -> Unit = {},
@@ -55,15 +64,9 @@ fun HomeHeader(
         auth = authenticated
     }
 
-    val buttonColor = remember(scrollFraction) {
-        Color.Black.copy(alpha = (1 - scrollFraction) * .8f)
+    val buttonBackgroundColor = remember(scrollFraction) {
+        Color.Black.copy(alpha = (scrollFraction * .8f).coerceIn(0.1f, 1f))
     }
-
-    val iconButtonColors = IconButtonDefaults.iconButtonColors(
-        contentColor = Color.White,
-        containerColor = buttonColor,
-        disabledContainerColor = buttonColor,
-    )
 
     CompositionLocalProvider(
         LocalContentColor provides Color.White
@@ -71,30 +74,19 @@ fun HomeHeader(
         Row(
             modifier = Modifier
                 .zIndex(1000f)
-                .fillMaxWidth()
-                .padding(top = statusBarSize),
-            horizontalArrangement = Arrangement.End,
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
-                Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp),
-
+                Modifier.weight(1f)
             ) {
-                Row(
-                    Modifier
-                        .padding(4.dp)
-                        .clip(RoundedCornerShape(50))
-                        .clickable(
-                            role = Role.Button,
-                            onClick = onAccountClicked,
-                        )
-                        .background(buttonColor)
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                InkButton(
+                    modifier = Modifier.background(buttonBackgroundColor),
+                    leadingIconRes = R.drawable.round_person_24,
+                    hazeState = hazeState,
+                    contentPadding = PaddingValues(8.dp),
+                    onClick = onAccountClicked,
                 ) {
-                    InkIcon(resId = R.drawable.round_person_24)
                     AnimatedVisibility(
                         visible = auth,
                         enter = expandHorizontally(),
@@ -109,29 +101,70 @@ fun HomeHeader(
                 }
             }
 
-            IconButton(
-                onClick = { },
-                colors = iconButtonColors,
-            ) {
-                InkIcon(resId = R.drawable.round_settings_24)
-            }
-            IconButton(
+            InkIconButton(
+                modifier = Modifier.background(buttonBackgroundColor),
+                iconRes = R.drawable.round_settings_24,
+                hazeState = hazeState,
+                onClick = onSettingsClicked,
+            )
+
+            InkIconButton(
+                modifier = Modifier.background(buttonBackgroundColor),
+                iconRes = R.drawable.round_search_24,
+                hazeState = hazeState,
                 onClick = onSearchClicked,
-                colors = iconButtonColors,
-            ) {
-                InkIcon(resId = R.drawable.round_search_24)
-            }
+            )
         }
+    }
+}
+
+@Composable
+private fun HeaderIconButton(
+    @DrawableRes iconRes: Int,
+    hazeState: HazeState,
+    buttonBackgroundColor: Color,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .padding(4.dp)
+            .clip(RoundedCornerShape(50.dp))
+            .border(
+                width = 1.dp,
+                color = buttonBorderColor,
+                shape = RoundedCornerShape(50.dp)
+            )
+            .hazeEffect(
+                state = hazeState,
+                style = HazeStyle.Unspecified.copy(
+                    backgroundColor = Color.Black.copy(alpha = 0.8f)
+                )
+            )
+            .background(buttonBackgroundColor)
+            .clickable(
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .padding(8.dp)
+
+    ) {
+        InkIcon(resId = iconRes)
     }
 }
 
 @PreviewLightDark
 @Composable
 private fun Preview() = DefaultPreview {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    val hazeState = LocalHazeState.current
+
+    CompositionLocalProvider(
+        LocalInkButtonMargin provides PaddingValues(0.dp)
     ) {
-        HomeHeader(scrollFraction = 0f, authenticated = true, authenticatedInitialState = true)
-        HomeHeader(scrollFraction = 1f, authenticated = true)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            HomeHeader(scrollFraction = 0f, authenticated = true, authenticatedInitialState = true, hazeState = hazeState)
+            HomeHeader(scrollFraction = 1f, authenticated = true, hazeState = hazeState)
+        }
     }
 }

@@ -46,6 +46,11 @@ class SessionManager(
             localSession = it
         }
 
+    fun logout() {
+        localSession = null
+        _session.value = null
+    }
+
     suspend fun refresh() {
         Log.d(tag, "Start Refresh")
         localSession?.let {

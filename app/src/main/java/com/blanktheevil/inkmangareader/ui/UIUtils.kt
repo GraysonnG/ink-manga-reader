@@ -8,16 +8,11 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsIgnoringVisibility
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.core.view.WindowCompat
@@ -96,23 +91,8 @@ fun WindowInsetsControllerCompat.hideSystemBars() {
 }
 
 @Composable
-fun InkIcon(
-    modifier: Modifier = Modifier,
-    contentDescription: String? = null,
-    tint: Color = LocalContentColor.current,
-    @DrawableRes resId: Int,
-) {
-    Icon(
-        painter = painterResource(id = resId), 
-        contentDescription = contentDescription,
-        tint = tint,
-        modifier = modifier
-    )
-}
-
-@Composable
 fun String?.toAsyncPainterImage(
-    crossfade: Boolean = false,
+    crossfade: Crossfade = Crossfade.NONE,
     @DrawableRes placeholder: Int? = null,
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ): AsyncImagePainter {
@@ -122,7 +102,7 @@ fun String?.toAsyncPainterImage(
             .apply { placeholder?.let { placeholder(placeholder) } }
             .dispatcher(dispatcher)
             .data(this)
-            .crossfade(crossfade)
+            .crossfade(crossfade.millis)
             .scale(Scale.FIT)
             .build(),
         contentScale = ContentScale.Crop,
@@ -130,6 +110,13 @@ fun String?.toAsyncPainterImage(
             Log.d("AsyncImage Error", it.result.throwable.message.toString())
         }
     )
+}
+
+enum class Crossfade(val millis: Int) {
+    NONE(0),
+    SHORT(300),
+    MEDIUM(600),
+    LONG(1000),
 }
 
 fun String.cap(locale: Locale): String {

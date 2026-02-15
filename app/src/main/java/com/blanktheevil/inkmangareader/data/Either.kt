@@ -2,6 +2,7 @@ package com.blanktheevil.inkmangareader.data
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 
@@ -35,6 +36,9 @@ fun <T> Either<out T?>.nullDataToNull(): Either<T> = if (this is Either.Success 
     Either.Null()
 }
 
+suspend fun <T> Flow<Either<T>>.eitherFirstOrNull(): Either<T> =
+    this.firstOrNull() ?: Either.Null()
+
 fun <T> Flow<Either<T>>.onEitherError(
     onError: (Throwable) -> Unit = {}
 ): Flow<Either<T>> = this.onEach {
@@ -49,3 +53,5 @@ fun <T> Flow<Either<T>>.filterEitherSuccess(
         }
         .filterIsInstance<Either.Success<T>>()
         .map { it.data }
+
+fun <T> T.toSuccess(): Either<T> = success(this)

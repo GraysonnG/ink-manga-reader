@@ -1,9 +1,11 @@
 package com.blanktheevil.inkmangareader.data.models
 
+import androidx.compose.runtime.Immutable
 import com.blanktheevil.inkmangareader.data.DataList
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
+@Immutable
 data class Manga(
     override val id: String,
     override val type: String = Manga::class.java.name,

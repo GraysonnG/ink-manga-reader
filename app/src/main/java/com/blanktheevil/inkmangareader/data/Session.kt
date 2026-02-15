@@ -1,7 +1,9 @@
 package com.blanktheevil.inkmangareader.data
 
+import com.blanktheevil.inkmangareader.data.auth.SessionManager
 import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -29,3 +31,10 @@ fun Flow<Session?>.onUniqueSession(): Flow<Boolean> =
         .filter { it.isValid() }
         .map { it.isValid() }
         .distinctUntilChanged()
+
+fun <T> SessionManager.withSession(
+    flow: Flow<T>
+): Flow<T> = session
+    .onUniqueSession()
+    .combine(flow, ::Pair)
+    .map { (_, f) -> f }

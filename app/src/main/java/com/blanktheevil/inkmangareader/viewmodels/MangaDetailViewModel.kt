@@ -63,7 +63,7 @@ class MangaDetailViewModel(
         return userListRepository.removeMangaFromList(mangaId, listId)
     }
 
-    private suspend fun getMangaData(mangaId: String, hardRefresh: Boolean) = viewModelScope.launch(
+    private fun getMangaData(mangaId: String, hardRefresh: Boolean) = viewModelScope.launch(
         Dispatchers.IO
     ) {
         updateState { copy(loading = true) }
@@ -83,14 +83,15 @@ class MangaDetailViewModel(
         }
     }
 
-    private suspend fun getMangaChapterFeed(mangaId: String, hardRefresh: Boolean) = viewModelScope.launch(
+    private fun getMangaChapterFeed(mangaId: String, hardRefresh: Boolean) = viewModelScope.launch(
         Dispatchers.IO
     ) {
         chapterRepository.getList(ChapterListRequest.Feed(mangaId), limit = 90, hardRefresh = hardRefresh).collect {
             when (it) {
                 is Either.Success -> {
                     updateState { copy(
-                        chapterFeed = it.data
+                        chapterFeed = it.data,
+                        loadingChapters = false,
                     ) }
                 }
 
@@ -101,7 +102,7 @@ class MangaDetailViewModel(
         }
     }
 
-    private suspend fun getFirstChapter(mangaId: String) = viewModelScope.launch(
+    private fun getFirstChapter(mangaId: String) = viewModelScope.launch(
         Dispatchers.IO
     ) {
         mangaRepository.getAggregate(mangaId = mangaId).onSuccess {
@@ -112,7 +113,9 @@ class MangaDetailViewModel(
         }
     }
 
-    private suspend fun getMangaFollowed(mangaId: String) = viewModelScope.launch(Dispatchers.IO) {
+    private fun getMangaFollowed(mangaId: String) = viewModelScope.launch(
+        Dispatchers.IO
+    ) {
         mangaRepository.getFollowing(mangaId = mangaId)
             .onSuccess {
                 updateState { copy(
@@ -133,6 +136,7 @@ class MangaDetailViewModel(
         val followed: Boolean = false,
         val chapterFeed: ChapterList = emptyDataList(),
         val firstChapter: LinkedChapter? = null,
+        val loadingChapters: Boolean = true,
     ): BaseViewModelState()
 
     data class Params(

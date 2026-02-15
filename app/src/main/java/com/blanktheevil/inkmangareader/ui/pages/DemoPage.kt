@@ -51,11 +51,13 @@ import com.blanktheevil.inkmangareader.ui.sheets.login.LoginSheet
 import com.blanktheevil.inkmangareader.ui.sheets.search.SearchSheet
 import com.blanktheevil.inkmangareader.viewmodels.DemoViewModel
 import com.blanktheevil.inkmangareader.viewmodels.MangaListType
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
-fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.DemoParams> {viewModel, uiState, authenticated ->
+fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.DemoParams> { viewModel, uiState, authenticated ->
     val sessionManager = koinInject<SessionManager>()
     val scope = rememberCoroutineScope()
     val nav = LocalNavController.current
@@ -65,23 +67,45 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
     var settingsSheetOpen by rememberFalseState()
     val headerHeight = LocalConfiguration.current.screenHeightDp.dp.times(0.5f)
     var featureEnabled by rememberTrueState()
+    val hazeState = rememberHazeState()
+
+    val onCollapsed = remember { { featureEnabled = false } }
+    val onExpanded = remember { { featureEnabled = true } }
 
     ImageHeader(
         initialHeight = headerHeight,
-        minHeight = 56.dp,
+        minHeight = 64.dp,
         url = "",
-        onCollapsed = { featureEnabled = false },
-        onExpanded = { featureEnabled = true },
+        onCollapsed = onCollapsed,
+        onExpanded = onExpanded,
+        navArea = { scrollFraction ->
+            HomeHeader(
+                scrollFraction = scrollFraction,
+                authenticated = authenticated,
+                hazeState = hazeState,
+                onSearchClicked = { searchSheetOpen = true },
+                onAccountClicked = {
+                    if (authenticated) {
+                        // open the user page?
+                    } else {
+                        loginSheetOpen = true
+                    }
+                }
+            )
+        },
         headerArea = { scrollFraction ->
             val alpha = remember(scrollFraction) {
                 1 - (scrollFraction * 1.5f).coerceIn(0f, 1f)
             }
 
             FeatureCarousel(
+                modifier = Modifier
+                    .hazeSource(state = hazeState),
                 contentModifier = Modifier
                     .alpha(alpha),
                 mangaList = uiState.seasonalList ?: emptyDataList(),
-                enabled = featureEnabled
+                enabled = featureEnabled,
+                loading = uiState.seasonalLoading,
             ) {
                 nav.navigateToMangaDetail(mangaId = it)
             }
@@ -92,19 +116,7 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
                         alpha = scrollFraction.times(0.8f)
                     )
                 )
-                .fillMaxSize())
-
-            HomeHeader(
-                scrollFraction = scrollFraction,
-                authenticated = authenticated,
-                onSearchClicked = { searchSheetOpen = true },
-                onAccountClicked = {
-                    if (authenticated) {
-                        // open the user menu
-                    } else {
-                        loginSheetOpen = true
-                    }
-                }
+                .fillMaxSize()
             )
         }
     ) {
@@ -117,7 +129,7 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
         ) {
             if (authenticated) {
                 item(key = "updates-feed") {
-                    MangaFeed(feed = uiState.chapterFeed) {
+                    MangaFeed(feed = uiState.chapterFeed, loading = uiState.chapterFeedLoading) {
                         nav.navigateToMangaDetail(mangaId = it)
                     }
                     Spacer(modifier = Modifier.size(16.dp))
@@ -138,23 +150,24 @@ fun DemoPage() = BasePage<DemoViewModel, DemoViewModel.DemoState, DemoViewModel.
                 }
             }
 
-            uiState.popularList?.let {
-                item(key = "popular-feed") {
-                    FilteredMangaShelf(
-                        mangaList = it,
-                        filters = Tags.PopularFilters,
-                        onRowLinkClicked = {
-                            nav.navigateToMangaList(MangaListType.POPULAR)
-                        },
-                        onItemClicked = { mangaId ->
-                            nav.navigateToMangaDetail(mangaId = mangaId)
-                        }
-                    ) { tag ->
-                        viewModel.filterPopularFeed(tag)
+
+            item(key = "popular-feed") {
+                FilteredMangaShelf(
+                    mangaList = uiState.popularList ?: emptyDataList(),
+                    filters = Tags.PopularFilters,
+                    loading = uiState.popularLoading,
+                    onRowLinkClicked = {
+                        nav.navigateToMangaList(MangaListType.POPULAR)
+                    },
+                    onItemClicked = { mangaId ->
+                        nav.navigateToMangaDetail(mangaId = mangaId)
                     }
-                    Spacer(Modifier.size(16.dp))
+                ) { tag ->
+                    viewModel.filterPopularFeed(tag)
                 }
+                Spacer(Modifier.size(16.dp))
             }
+
 
             uiState.recentList?.let {
                 item(key = "recent-feed") {
